@@ -5,6 +5,7 @@ import { registerOpenWorkspace } from './commands/openWorkspace';
 import { registerSetOpenMode } from './commands/setOpenMode';
 import { registerSetLabel } from './commands/setLabel';
 import { registerSetColor } from './commands/setColor';
+import { registerFilterHistory } from './commands/filterHistory';
 import { HistoryStore } from './store/HistoryStore';
 import { MetaStore } from './store/MetaStore';
 
@@ -43,6 +44,7 @@ registerOpenWorkspace(context, history, meta);
 registerSetOpenMode(context);
 registerSetLabel(context, meta, workspacesProvider, historyProvider);
 registerSetColor(context, meta, workspacesProvider, historyProvider);
+registerFilterHistory(context, historyProvider);
 }
 
 

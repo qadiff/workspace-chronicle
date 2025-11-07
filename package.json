@@ -14,7 +14,8 @@
         "onCommand:workspaceChronicle.open",
         "onCommand:workspaceChronicle.setOpenMode",
         "onCommand:workspaceChronicle.setLabel",
-        "onCommand:workspaceChronicle.setColor"
+        "onCommand:workspaceChronicle.setColor",
+        "onCommand:workspaceChronicle.filterHistory"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -38,6 +39,10 @@
     {
         "command": "workspaceChronicle.setColor",
         "title": "Workspace Chronicle: Set Color"
+    },
+    {
+        "command": "workspaceChronicle.filterHistory",
+        "title": "Workspace Chronicle: Filter History"
     }
     ],
     "configuration": {
@@ -76,11 +81,15 @@
     }
     },
     "scripts": {
-    "compile": "tsc -p .",
-    "watch": "tsc -w",
-    "dev": "pnpm compile && echo 'Run F5 to launch Extension Host'",
-    "lint": "eslint .",
-    "package": "vsce package"
+        "compile": "tsc -p .",
+        "watch": "tsc -w",
+        "dev": "pnpm compile && echo 'Run F5 to launch Extension Host'",
+        "lint": "eslint .",
+        "package": "vsce package",
+        "prepare": "husky"
+    },
+    "lint-staged": {
+    "**/*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"]
     },
     "devDependencies": {
     "@types/node": "^22.7.4",
