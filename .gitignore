@@ -1,0 +1,50 @@
+# Node / pnpm
+node_modules/
+.pnpm-store/
+pnpm-debug.log*
+*.tgz
+
+
+# Build outputs
+out/
+dist/
+coverage/
+
+
+# VS Code
+.vscode-test/
+.vscode/ipch/
+*.code-workspace.backup
+
+
+# Logs / Temp
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+
+# Environment / credentials
+.env
+.env.local
+.env.*.local
+
+
+# VSCE packages
+*.vsix
+
+
+# Docker / Dev Containers cache
+.devcontainer/.cache/
+
+
+# OS files
+._*
+.Spotlight-V100
+.Trashes
+
+
+# Misc
+.idea/
+*.swp
+*.swo

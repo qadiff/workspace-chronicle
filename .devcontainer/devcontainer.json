@@ -1,0 +1,23 @@
+{
+    "name": "Workspace Chronicle Dev",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "features": {},
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "bierner.markdown-preview-github-styles",
+                "ms-vscode.vscode-typescript-next"
+            ],
+            "settings": {
+                "editor.formatOnSave": true,
+                "files.eol": "\n"
+            }
+        }
+    },
+    "remoteUser": "node",
+    "postCreateCommand": "corepack enable && pnpm i && bash .devcontainer/setup-dotfiles.sh"
+}
