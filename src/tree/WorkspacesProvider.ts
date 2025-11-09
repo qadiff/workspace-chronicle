@@ -27,14 +27,14 @@ async getChildren(element?: WorkspaceItem): Promise<WorkspaceItem[]> {
 if (element) return [];
 
 
-const roots = vscode.workspace.getConfiguration('workspaceChronicle').get<string[]>('workspaceChronicle.roots')
-|| vscode.workspace.getConfiguration().get<string[]>('workspaceChronicle.roots')
-|| [];
+const roots =
+    vscode.workspace.getConfiguration().get<string[]>('workspaceChronicle.roots') ||
+    [];
 
 
 const items: WorkspaceItem[] = [];
 for (const root of roots) {
-const expanded = expandHome(root);
+const expanded = expandPath(root);
 const found = await findWorkspaceFiles(expanded);
 for (const file of found) {
 const meta = this.meta.get(file);
@@ -74,25 +74,38 @@ this.contextValue = 'workspaceItem';
 
 
 async function findWorkspaceFiles(dir: string): Promise<string[]> {
-const results: string[] = [];
-async function walk(d: string) {
-let entries: any[] = [];
-try { entries = await fs.readdir(d, { withFileTypes: true }); } catch { return; }
-await Promise.all(entries.map(async (entry) => {
-const p = path.join(d, entry.name);
-if (entry.isDirectory()) {
-if (entry.name === 'node_modules' || entry.name.startsWith('.git')) return;
-await walk(p);
-} else if (entry.isFile() && p.endsWith('.code-workspace')) {
-results.push(p);
-}
-}));
-}
-await walk(dir);
-return results;
-}
+    const results: string[] = [];
+    async function walk(d: string) {
+    let entries: any[] = [];
+    try { 
+    entries = await fs.readdir(d, { withFileTypes: true }); 
+    } catch (err: any) { 
+    // よくあるファイルシステムエラーは静かにスキップ
+    const silentErrors = ['EACCES', 'EPERM', 'ENOENT', 'ENOTDIR', 'ELOOP'];
+    if (silentErrors.includes(err?.code)) {
+    return;
+    }
+    console.error('[findWorkspaceFiles] error reading dir:', d, err);
+    return; 
+    }
+    await Promise.all(entries.map(async (entry) => {
+    const p = path.join(d, entry.name);
+    if (entry.isDirectory()) {
+    if (entry.name === 'node_modules' || entry.name.startsWith('.git')) return;
+    await walk(p);
+    } else if (entry.isFile() && p.endsWith('.code-workspace')) {
+    console.log('[findWorkspaceFiles] found:', p);
+    results.push(p);
+    }
+    }));
+    }
+    await walk(dir);
+    return results;
+    }
 
-function expandHome(p: string) {
-    if (p.startsWith('~')) return path.join(process.env.HOME || process.env.USERPROFILE || '', p.slice(1));
+function expandPath(p: string) {
+    const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+    if (p.startsWith('~')) return path.join(homeDir, p.slice(1));
+    if (p.includes('${userHome}')) return p.replace(/\$\{userHome\}/g, homeDir);
     return p;
 }

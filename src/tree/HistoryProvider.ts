@@ -6,6 +6,7 @@ import { MetaStore } from '../store/MetaStore';
 export class HistoryProvider implements vscode.TreeDataProvider<HistoryItem> {
 private _onDidChangeTreeData = new vscode.EventEmitter<void>();
 readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+private filterKeyword: string = '';
 
 
 constructor(private history: HistoryStore, private meta: MetaStore) {}
@@ -14,19 +15,33 @@ constructor(private history: HistoryStore, private meta: MetaStore) {}
 refresh() { this._onDidChangeTreeData.fire(); }
 
 
+setFilter(keyword: string) {
+this.filterKeyword = keyword.toLowerCase();
+this._onDidChangeTreeData.fire();
+}
+
+
 getTreeItem(element: HistoryItem) { return element; }
 
 
 async getChildren(element?: HistoryItem): Promise<HistoryItem[]> {
 if (element) return [];
-const entries = this.history.getAll();
+let entries = this.history.getAll();
+if (this.filterKeyword) {
+entries = entries.filter(e => 
+e.name.toLowerCase().includes(this.filterKeyword) ||
+e.path.toLowerCase().includes(this.filterKeyword)
+);
+return entries.map(e => new HistoryItem(e, this.meta.get(e.path)?.color, entries.length));
+}
 return entries.map(e => new HistoryItem(e, this.meta.get(e.path)?.color));
 }
 }
 
 class HistoryItem extends vscode.TreeItem {
-    constructor(public readonly entry: HistoryEntry, color?: string) {
-    super(`${fmtDate(entry.openedAt)} – ${entry.name}`, vscode.TreeItemCollapsibleState.None);
+    constructor(public readonly entry: HistoryEntry, color?: string, totalCount?: number) {
+    const label = `${fmtDate(entry.openedAt)} – ${entry.name}`;
+    super(totalCount !== undefined ? `${label} (${totalCount})` : label, vscode.TreeItemCollapsibleState.None);
     this.description = entry.path;
     this.command = { command: 'workspaceChronicle.open', title: 'Open', arguments: [entry.path] };
     this.tooltip = `${entry.name}\n${entry.path}\nmode: ${entry.mode}`;

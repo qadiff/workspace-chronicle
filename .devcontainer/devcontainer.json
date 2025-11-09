@@ -19,5 +19,5 @@
         }
     },
     "remoteUser": "node",
-    "postCreateCommand": "corepack enable && pnpm i && bash .devcontainer/setup-dotfiles.sh"
+    "postCreateCommand": "bash .devcontainer/postCreate.sh"
 }

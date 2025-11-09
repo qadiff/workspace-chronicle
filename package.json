@@ -7,89 +7,110 @@
     "engines": {
         "vscode": "^1.95.0"
     },
-    "categories": ["Other"],
+    "categories": [
+        "Other"
+    ],
     "activationEvents": [
         "onStartupFinished",
         "onCommand:workspaceChronicle.refresh",
         "onCommand:workspaceChronicle.open",
         "onCommand:workspaceChronicle.setOpenMode",
         "onCommand:workspaceChronicle.setLabel",
-        "onCommand:workspaceChronicle.setColor"
+        "onCommand:workspaceChronicle.setColor",
+        "onCommand:workspaceChronicle.filterHistory"
     ],
     "main": "./out/extension.js",
     "contributes": {
-    "commands": [
-    {
-        "command": "workspaceChronicle.refresh",
-        "title": "Workspace Chronicle: Refresh"
-    },
-    {
-        "command": "workspaceChronicle.open",
-        "title": "Workspace Chronicle: Open Workspace"
-    },
-    {
-        "command": "workspaceChronicle.setOpenMode",
-        "title": "Workspace Chronicle: Set Default Open Mode"
-    },
-    {
-        "command": "workspaceChronicle.setLabel",
-        "title": "Workspace Chronicle: Set Label"
-    },
-    {
-        "command": "workspaceChronicle.setColor",
-        "title": "Workspace Chronicle: Set Color"
-    }
-    ],
-    "configuration": {
-        "type": "object",
-        "title": "Workspace Chronicle Settings",
-        "properties": {
-            "workspaceChronicle.roots": {
-            "type": "array",
-            "default": ["${userHome}"],
-            "description": ".code-workspace を探索するルートディレクトリの配列"
+        "commands": [
+            {
+                "command": "workspaceChronicle.refresh",
+                "title": "Workspace Chronicle: Refresh"
+            },
+            {
+                "command": "workspaceChronicle.open",
+                "title": "Workspace Chronicle: Open Workspace"
+            },
+            {
+                "command": "workspaceChronicle.setOpenMode",
+                "title": "Workspace Chronicle: Set Default Open Mode"
+            },
+            {
+                "command": "workspaceChronicle.setLabel",
+                "title": "Workspace Chronicle: Set Label"
+            },
+            {
+                "command": "workspaceChronicle.setColor",
+                "title": "Workspace Chronicle: Set Color"
+            },
+            {
+                "command": "workspaceChronicle.filterHistory",
+                "title": "Workspace Chronicle: Filter History"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "scope": "resource",
+            "title": "Workspace Chronicle Settings",
+            "properties": {
+                "workspaceChronicle.roots": {
+                    "type": "array",
+                    "default": [
+                        "${userHome}"
+                    ],
+                    "description": ".code-workspace を探索するルートディレクトリの配列"
+                },
+                "workspaceChronicle.defaultOpenMode": {
+                    "type": "string",
+                    "enum": [
+                        "newWindow",
+                        "reuseWindow"
+                    ],
+                    "default": "newWindow",
+                    "description": "ワークスペースを開く既定動作（新規ウィンドウ / 既存ウィンドウ）"
+                },
+                "workspaceChronicle.historyLimit": {
+                    "type": "number",
+                    "default": 500,
+                    "description": "保存する履歴の最大件数"
+                }
+            }
         },
-        "workspaceChronicle.defaultOpenMode": {
-            "type": "string",
-            "enum": ["newWindow", "reuseWindow"],
-            "default": "newWindow",
-            "description": "ワークスペースを開く既定動作（新規ウィンドウ / 既存ウィンドウ）"
-        },
-            "workspaceChronicle.historyLimit": {
-            "type": "number",
-            "default": 500,
-            "description": "保存する履歴の最大件数"
+        "views": {
+            "explorer": [
+                {
+                    "id": "workspaceChronicle.workspaces",
+                    "name": "Workspaces"
+                },
+                {
+                    "id": "workspaceChronicle.history",
+                    "name": "Workspace History"
+                }
+            ]
         }
-      }
-    },
-    "views": {
-    "explorer": [
-    {
-    "id": "workspaceChronicle.workspaces",
-    "name": "Workspaces"
-    },
-    {
-    "id": "workspaceChronicle.history",
-    "name": "Workspace History"
-    }
-    ]
-    }
     },
     "scripts": {
-    "compile": "tsc -p .",
-    "watch": "tsc -w",
-    "dev": "pnpm compile && echo 'Run F5 to launch Extension Host'",
-    "lint": "eslint .",
-    "package": "vsce package"
+        "compile": "tsc -p .",
+        "watch": "tsc -w",
+        "dev": "pnpm compile && echo 'Run F5 to launch Extension Host'",
+        "lint": "eslint .",
+        "package": "vsce package",
+        "prepare": "husky"
+    },
+    "lint-staged": {
+        "**/*.{ts,tsx,js,jsx}": [
+            "eslint --fix",
+            "prettier --write"
+        ]
     },
     "devDependencies": {
-    "@types/node": "^22.7.4",
-    "@types/vscode": "^1.95.0",
-    "eslint": "^9.12.0",
-    "typescript": "^5.6.3",
-    "vsce": "^2.15.0"
+        "@types/node": "^22.7.4",
+        "@types/vscode": "^1.95.0",
+        "@vscode/vsce": "^3.7.0",
+        "eslint": "^9.12.0",
+        "husky": "^9.1.7",
+        "typescript": "^5.6.3"
     },
     "pnpm": {
-    "packageManager": "pnpm@9.12.0"
+        "packageManager": "pnpm@9.12.0"
     }
 }
