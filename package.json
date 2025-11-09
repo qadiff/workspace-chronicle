@@ -17,7 +17,9 @@
         "onCommand:workspaceChronicle.setOpenMode",
         "onCommand:workspaceChronicle.setLabel",
         "onCommand:workspaceChronicle.setColor",
-        "onCommand:workspaceChronicle.filterHistory"
+        "onCommand:workspaceChronicle.filterHistory",
+        "onCommand:workspaceChronicle.toggleSort",
+        "onCommand:workspaceChronicle.copyFullPath"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -45,6 +47,14 @@
             {
                 "command": "workspaceChronicle.filterHistory",
                 "title": "Workspace Chronicle: Filter History"
+            },
+            {
+                "command": "workspaceChronicle.toggleSort",
+                "title": "Workspace Chronicle: Toggle Sort Mode"
+            },
+            {
+                "command": "workspaceChronicle.copyFullPath",
+                "title": "Copy Full Path"
             }
         ],
         "configuration": {
@@ -84,6 +94,15 @@
                 {
                     "id": "workspaceChronicle.history",
                     "name": "Workspace History"
+                }
+            ]
+        },
+        "menus": {
+            "view/item/context": [
+                {
+                    "command": "workspaceChronicle.copyFullPath",
+                    "when": "view == workspaceChronicle.workspaces && viewItem == workspaceItem",
+                    "group": "navigation"
                 }
             ]
         }
