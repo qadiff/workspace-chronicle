@@ -11,10 +11,13 @@ qp.canSelectMany = false;
 qp.items = [{ label: '$(clear-all) Clear Filter', alwaysShow: true }];
 
 qp.onDidChangeValue((value) => {
+  // リアルタイムにフィルタ適用
+  historyProvider.setFilter(value);
+  
   if (value) {
     qp.items = [
       { label: '$(clear-all) Clear Filter', alwaysShow: true },
-      { label: `$(search) Filter: "${value}"`, description: 'Press Enter to apply' }
+      { label: `$(search) Filtering: "${value}"` }
     ];
   } else {
     qp.items = [{ label: '$(clear-all) Clear Filter', alwaysShow: true }];
@@ -25,9 +28,8 @@ qp.onDidAccept(() => {
   const selected = qp.selectedItems[0];
   if (selected?.label.includes('Clear Filter')) {
     historyProvider.setFilter('');
-  } else {
-    historyProvider.setFilter(qp.value);
   }
+  // フィルタは既にリアルタイムで適用済み
   qp.hide();
 });
 
