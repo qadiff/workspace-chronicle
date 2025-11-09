@@ -19,7 +19,8 @@
         "onCommand:workspaceChronicle.setColor",
         "onCommand:workspaceChronicle.filterHistory",
         "onCommand:workspaceChronicle.toggleSort",
-        "onCommand:workspaceChronicle.copyFullPath"
+        "onCommand:workspaceChronicle.copyFullPath",
+        "onCommand:workspaceChronicle.filterByTag"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -38,7 +39,7 @@
             },
             {
                 "command": "workspaceChronicle.setLabel",
-                "title": "Workspace Chronicle: Set Label"
+                "title": "Workspace Chronicle: Set Custom Name"
             },
             {
                 "command": "workspaceChronicle.setColor",
@@ -55,6 +56,10 @@
             {
                 "command": "workspaceChronicle.copyFullPath",
                 "title": "Copy Full Path"
+            },
+            {
+                "command": "workspaceChronicle.filterByTag",
+                "title": "Workspace Chronicle: Filter by Tag"
             }
         ],
         "configuration": {
