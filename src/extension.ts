@@ -45,6 +45,13 @@ registerSetOpenMode(context);
 registerSetLabel(context, meta, workspacesProvider, historyProvider);
 registerSetColor(context, meta, workspacesProvider, historyProvider);
 registerFilterHistory(context, historyProvider);
+
+context.subscriptions.push(
+vscode.commands.registerCommand('workspaceChronicle.toggleSort', () => {
+const newMode = historyProvider.toggleSort();
+vscode.window.showInformationMessage(`History sort mode: ${newMode}`);
+})
+);
 }
 
 

@@ -17,7 +17,8 @@
         "onCommand:workspaceChronicle.setOpenMode",
         "onCommand:workspaceChronicle.setLabel",
         "onCommand:workspaceChronicle.setColor",
-        "onCommand:workspaceChronicle.filterHistory"
+        "onCommand:workspaceChronicle.filterHistory",
+        "onCommand:workspaceChronicle.toggleSort"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -45,6 +46,10 @@
             {
                 "command": "workspaceChronicle.filterHistory",
                 "title": "Workspace Chronicle: Filter History"
+            },
+            {
+                "command": "workspaceChronicle.toggleSort",
+                "title": "Workspace Chronicle: Toggle Sort Mode"
             }
         ],
         "configuration": {

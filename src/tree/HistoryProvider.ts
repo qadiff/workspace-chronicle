@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { HistoryStore, HistoryEntry } from '../store/HistoryStore';
+import { HistoryStore, HistoryEntry, SortMode } from '../store/HistoryStore';
 import { MetaStore } from '../store/MetaStore';
 
 
@@ -26,7 +26,7 @@ getTreeItem(element: HistoryItem) { return element; }
 
 async getChildren(element?: HistoryItem): Promise<HistoryItem[]> {
 if (element) return [];
-let entries = this.history.getAll();
+let entries = this.history.getSorted();
 if (this.filterKeyword) {
 entries = entries.filter(e => 
 e.name.toLowerCase().includes(this.filterKeyword) ||
@@ -35,6 +35,12 @@ e.path.toLowerCase().includes(this.filterKeyword)
 return entries.map(e => new HistoryItem(e, this.meta.get(e.path)?.color, entries.length));
 }
 return entries.map(e => new HistoryItem(e, this.meta.get(e.path)?.color));
+}
+
+toggleSort(): SortMode {
+const newMode = this.history.toggleSort();
+this.refresh();
+return newMode;
 }
 }
 
