@@ -6,6 +6,7 @@ import { registerSetOpenMode } from './commands/setOpenMode';
 import { registerSetLabel } from './commands/setLabel';
 import { registerSetColor } from './commands/setColor';
 import { registerFilterHistory } from './commands/filterHistory';
+import { registerCopyFullPath } from './commands/copyFullPath';
 import { HistoryStore } from './store/HistoryStore';
 import { MetaStore } from './store/MetaStore';
 
@@ -39,6 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
 	registerSetLabel(context, meta, workspacesProvider, historyProvider);
 	registerSetColor(context, meta, workspacesProvider, historyProvider);
 	registerFilterHistory(context, historyProvider);
+	registerCopyFullPath(context);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('workspaceChronicle.toggleSort', () => {
