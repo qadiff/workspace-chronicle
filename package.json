@@ -148,7 +148,8 @@
         "watch": "tsc -w",
         "dev": "pnpm compile && echo 'Run F5 to launch Extension Host'",
         "lint": "eslint .",
-        "test": "pnpm compile && xvfb-run -a node ./out/test/runTest.js",
+        "test": "pnpm compile && node ./out/test/runTest.js",
+        "test:linux": "pnpm compile && xvfb-run -a node ./out/test/runTest.js",
         "package": "vsce package",
         "prepare": "husky",
         "vscode:prepublish": "pnpm compile"
