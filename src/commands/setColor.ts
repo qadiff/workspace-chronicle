@@ -13,7 +13,7 @@ meta: MetaStore,
 ...refreshers: { refresh(): void }[]
 ) {
 context.subscriptions.push(
-vscode.commands.registerCommand('workspaceChronicle.setColor', async (item?: any) => {
+vscode.commands.registerCommand('workspaceChronicle.setColor', async (item?: { fullPath: string } | string) => {
 let fullPath: string | undefined;
 
 // Called from context menu (TreeItem) or command palette

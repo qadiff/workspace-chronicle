@@ -4,7 +4,7 @@ import { HistoryProvider } from '../tree/HistoryProvider';
 
 export function registerFilterHistory(context: vscode.ExtensionContext, historyProvider: HistoryProvider) {
 context.subscriptions.push(
-vscode.commands.registerCommand('workspaceChronicle.filterHistory', async () => {
+vscode.commands.registerCommand('workspaceChronicle.filterHistory', () => {
 const qp = vscode.window.createQuickPick();
 qp.placeholder = 'Enter keyword to filter history...';
 qp.canSelectMany = false;

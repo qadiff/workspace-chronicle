@@ -2,8 +2,8 @@ import * as vscode from 'vscode';
 
 export function registerCopyFullPath(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
-		vscode.commands.registerCommand('workspaceChronicle.copyFullPath', async (item: any) => {
-			if (!item || !item.fullPath) {
+		vscode.commands.registerCommand('workspaceChronicle.copyFullPath', async (item: { fullPath: string }) => {
+			if (!item?.fullPath) {
 				vscode.window.showErrorMessage('No workspace item selected');
 				return;
 			}

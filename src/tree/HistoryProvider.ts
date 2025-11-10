@@ -33,7 +33,7 @@ export class HistoryProvider implements vscode.TreeDataProvider<HistoryItem> {
 		return element;
 	}
 
-	async getChildren(element?: HistoryItem): Promise<HistoryItem[]> {
+	getChildren(element?: HistoryItem): HistoryItem[] | Promise<HistoryItem[]> {
 		if (element) {
 			return [];
 		}

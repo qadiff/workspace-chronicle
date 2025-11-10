@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { promises as fs } from 'fs';
+import { promises as fs, Dirent } from 'fs';
 import * as path from 'path';
 import { MetaStore } from '../store/MetaStore';
 import { HistoryStore } from '../store/HistoryStore';
@@ -62,7 +62,11 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 		}
 
 		// Sort by label
-		items.sort((a, b) => a.label!.localeCompare(b.label!));
+		items.sort((a, b) => {
+			const labelA = typeof a.label === 'string' ? a.label : '';
+			const labelB = typeof b.label === 'string' ? b.label : '';
+			return labelA.localeCompare(labelB);
+		});
 		return items;
 	}
 }
@@ -98,31 +102,31 @@ function encodeColor(color: string): string {
 
 async function findWorkspaceFiles(dir: string): Promise<string[]> {
 	const results: string[] = [];
-	async function walk(d: string) {
-		let entries: any[] = [];
+	async function walk(d: string): Promise<void> {
+		let entries: Dirent[] = [];
 		try {
 			entries = await fs.readdir(d, { withFileTypes: true });
-		} catch (err: any) {
+		} catch (err) {
 			// Skip common filesystem errors silently
 			const silentErrors = ['EACCES', 'EPERM', 'ENOENT', 'ENOTDIR', 'ELOOP'];
-			if (silentErrors.includes(err?.code)) {
+			if (err && typeof err === 'object' && 'code' in err && typeof err.code === 'string' && silentErrors.includes(err.code)) {
 				return;
 			}
 			console.error('[findWorkspaceFiles] error reading dir:', d, err);
 			return;
 		}
-		await Promise.all(entries.map(async (entry) => {
+		for (const entry of entries) {
 			const p = path.join(d, entry.name);
 			if (entry.isDirectory()) {
 				if (entry.name === 'node_modules' || entry.name.startsWith('.git')) {
-					return;
+					continue;
 				}
 				await walk(p);
 			} else if (entry.isFile() && p.endsWith('.code-workspace')) {
 				console.log('[findWorkspaceFiles] found:', p);
 				results.push(p);
 			}
-		}));
+		}
 	}
 	await walk(dir);
 	return results;
