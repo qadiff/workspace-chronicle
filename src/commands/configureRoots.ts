@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 /**
- * ルートディレクトリを追加するコマンド
+ * Command to add a root directory
  */
 export async function addRootDirectory(): Promise<void> {
     const result = await vscode.window.showOpenDialog({
