@@ -111,6 +111,16 @@
         "menus": {
             "view/item/context": [
                 {
+                    "command": "workspaceChronicle.setLabel",
+                    "when": "view == workspaceChronicle.workspaces && viewItem == workspaceItem",
+                    "group": "edit@1"
+                },
+                {
+                    "command": "workspaceChronicle.setColor",
+                    "when": "view == workspaceChronicle.workspaces && viewItem == workspaceItem",
+                    "group": "edit@2"
+                },
+                {
                     "command": "workspaceChronicle.copyFullPath",
                     "when": "view == workspaceChronicle.workspaces && viewItem == workspaceItem",
                     "group": "navigation"
