@@ -62,7 +62,7 @@ export async function removeRootDirectory(): Promise<void> {
 }
 
 /**
- * 現在のルートディレクトリ一覧を表示するコマンド
+ * Command to display the list of current root directories.
  */
 export function listRootDirectories(): void {
     const config = vscode.workspace.getConfiguration('workspaceChronicle');
