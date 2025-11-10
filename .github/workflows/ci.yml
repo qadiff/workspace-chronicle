@@ -37,10 +37,10 @@ jobs:
     - name: Compile
       run: pnpm compile
 
-    - name: Run tests
-      run: xvfb-run -a pnpm test
+    - name: Run tests (Linux)
+      run: pnpm test:linux
       if: runner.os == 'Linux'
 
-    - name: Run tests
+    - name: Run tests (macOS/Windows)
       run: pnpm test
       if: runner.os != 'Linux'

@@ -2,9 +2,15 @@
     "name": "workspace-chronicle",
     "displayName": "Workspace Chronicle",
     "description": "List & search .code-workspace files, open in new window by default, and keep searchable history.",
-    "publisher": "qadiff",
+    "publisher": "qadiffllc",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/qadiff/workspace-chronicle"
+    },
     "version": "0.0.1",
     "type": "commonjs",
+    "packageManager": "pnpm@9.12.0",
     "engines": {
         "vscode": "^1.95.0"
     },
@@ -147,8 +153,10 @@
         "dev": "pnpm compile && echo 'Run F5 to launch Extension Host'",
         "lint": "eslint .",
         "test": "pnpm compile && node ./out/test/runTest.js",
+        "test:linux": "pnpm compile && xvfb-run -a node ./out/test/runTest.js",
         "package": "vsce package",
-        "prepare": "husky"
+        "prepare": "husky",
+        "vscode:prepublish": "pnpm compile"
     },
     "lint-staged": {
         "**/*.{ts,tsx,js,jsx}": [
@@ -172,6 +180,9 @@
         "typescript-eslint": "^8.46.3"
     },
     "pnpm": {
-        "packageManager": "pnpm@9.12.0"
+        "onlyBuiltDependencies": [
+            "@vscode/vsce-sign",
+            "keytar"
+        ]
     }
 }
