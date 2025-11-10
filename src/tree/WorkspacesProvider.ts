@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { promises as fs, Dirent } from 'fs';
 import * as path from 'path';
+import { globby } from 'globby';
 import { MetaStore } from '../store/MetaStore';
 import { HistoryStore } from '../store/HistoryStore';
 
@@ -8,11 +8,58 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 	private _onDidChangeTreeData = new vscode.EventEmitter<void>();
 	readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 	private tagFilter: { type: 'label' | 'color'; value: string } | null = null;
+	private cachedWorkspaceFiles: string[] = [];
+	private isRefreshing = false;
+	private refreshTimeout?: NodeJS.Timeout;
+	private refreshPromise?: Promise<void>;
 
 	constructor(private meta: MetaStore, private history: HistoryStore) {}
 
 	refresh() {
+		// Debounce: clear existing timeout
+		if (this.refreshTimeout) {
+			clearTimeout(this.refreshTimeout);
+		}
+
+		this.cachedWorkspaceFiles = [];
 		this._onDidChangeTreeData.fire();
+
+		// Debounce refresh to avoid rapid consecutive calls
+		this.refreshTimeout = setTimeout(() => {
+			void this.refreshWorkspaceFiles();
+		}, 100);
+	}
+
+	private async refreshWorkspaceFiles(): Promise<void> {
+		if (this.isRefreshing) {
+			// Return existing promise to wait for current refresh
+			return this.refreshPromise;
+		}
+
+		this.isRefreshing = true;
+		this.refreshPromise = (async () => {
+			try {
+				const roots =
+					vscode.workspace.getConfiguration().get<string[]>('workspaceChronicle.roots') ||
+					[];
+
+				// Search all roots in parallel using globby with progressive updates
+				const expandedRoots = roots.map(expandPath);
+
+				// Use streaming approach for progressive updates
+				await findWorkspaceFilesProgressive(expandedRoots, (files) => {
+					this.cachedWorkspaceFiles = files;
+					this._onDidChangeTreeData.fire();
+				});
+			} catch (error) {
+				console.error('[WorkspacesProvider] Error refreshing workspace files:', error);
+			} finally {
+				this.isRefreshing = false;
+				this.refreshPromise = undefined;
+			}
+		})();
+
+		return this.refreshPromise;
 	}
 
 	setTagFilter(type: 'label' | 'color', value: string) {
@@ -34,31 +81,28 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 			return [];
 		}
 
-		const roots =
-			vscode.workspace.getConfiguration().get<string[]>('workspaceChronicle.roots') ||
-			[];
+		// Wait for initial refresh if cache is empty
+		if (this.cachedWorkspaceFiles.length === 0) {
+			await this.refreshWorkspaceFiles();
+		}
 
 		const items: WorkspaceItem[] = [];
-		for (const root of roots) {
-			const expanded = expandPath(root);
-			const found = await findWorkspaceFiles(expanded);
-			for (const file of found) {
-				const meta = this.meta.get(file);
+		for (const file of this.cachedWorkspaceFiles) {
+			const meta = this.meta.get(file);
 
-				// Apply tag filter
-				if (this.tagFilter) {
-					if (this.tagFilter.type === 'label' && meta?.label !== this.tagFilter.value) {
-						continue;
-					}
-					if (this.tagFilter.type === 'color' && meta?.color !== this.tagFilter.value) {
-						continue;
-					}
+			// Apply tag filter
+			if (this.tagFilter) {
+				if (this.tagFilter.type === 'label' && meta?.label !== this.tagFilter.value) {
+					continue;
 				}
-
-				const label = meta?.label || path.basename(file);
-				const item = new WorkspaceItem(label, file, meta?.color);
-				items.push(item);
+				if (this.tagFilter.type === 'color' && meta?.color !== this.tagFilter.value) {
+					continue;
+				}
 			}
+
+			const label = meta?.label || path.basename(file);
+			const item = new WorkspaceItem(label, file, meta?.color);
+			items.push(item);
 		}
 
 		// Sort by label
@@ -100,36 +144,44 @@ function encodeColor(color: string): string {
 	return color;
 }
 
-async function findWorkspaceFiles(dir: string): Promise<string[]> {
-	const results: string[] = [];
-	async function walk(d: string): Promise<void> {
-		let entries: Dirent[] = [];
-		try {
-			entries = await fs.readdir(d, { withFileTypes: true });
-		} catch (err) {
-			// Skip common filesystem errors silently
-			const silentErrors = ['EACCES', 'EPERM', 'ENOENT', 'ENOTDIR', 'ELOOP'];
-			if (err && typeof err === 'object' && 'code' in err && typeof err.code === 'string' && silentErrors.includes(err.code)) {
-				return;
+async function findWorkspaceFilesProgressive(
+	roots: string[],
+	onUpdate: (files: string[]) => void
+): Promise<void> {
+	try {
+		// Search each root progressively and update as we go
+		const allFiles: string[] = [];
+
+		for (const root of roots) {
+			const pattern = path.join(root, '**/*.code-workspace');
+
+			const files = await globby(pattern, {
+				ignore: [
+					'**/node_modules/**',
+					'**/.git/**',
+					'**/bower_components/**',
+					'**/vendor/**'
+				],
+				absolute: true,
+				followSymbolicLinks: false,
+				onlyFiles: true,
+				suppressErrors: true
+			});
+
+			// Add found files and trigger update
+			allFiles.push(...files);
+			if (files.length > 0) {
+				onUpdate([...allFiles]);
 			}
-			console.error('[findWorkspaceFiles] error reading dir:', d, err);
-			return;
 		}
-		for (const entry of entries) {
-			const p = path.join(d, entry.name);
-			if (entry.isDirectory()) {
-				if (entry.name === 'node_modules' || entry.name.startsWith('.git')) {
-					continue;
-				}
-				await walk(p);
-			} else if (entry.isFile() && p.endsWith('.code-workspace')) {
-				console.log('[findWorkspaceFiles] found:', p);
-				results.push(p);
-			}
-		}
+
+		// Final update with all files
+		onUpdate(allFiles);
+		console.log(`[findWorkspaceFilesProgressive] found ${allFiles.length} workspace files across ${roots.length} roots`);
+	} catch (error) {
+		console.error('[findWorkspaceFilesProgressive] error:', error);
+		onUpdate([]);
 	}
-	await walk(dir);
-	return results;
 }
 
 function expandPath(p: string) {
