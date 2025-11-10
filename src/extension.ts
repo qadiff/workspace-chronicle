@@ -11,6 +11,7 @@ import { registerCopyFullPath } from './commands/copyFullPath';
 import { registerFilterByTag } from './commands/filterByTag';
 import { registerClearFilters } from './commands/clearFilters';
 import { registerExportImport } from './commands/exportImport';
+import { addRootDirectory, removeRootDirectory, listRootDirectories } from './commands/configureRoots';
 import { HistoryStore } from './store/HistoryStore';
 import { MetaStore } from './store/MetaStore';
 
@@ -56,6 +57,12 @@ export function activate(context: vscode.ExtensionContext) {
 			const newMode = historyProvider.toggleSort();
 			vscode.window.showInformationMessage(`History sort mode: ${newMode}`);
 		})
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('workspaceChronicle.addRootDirectory', addRootDirectory),
+		vscode.commands.registerCommand('workspaceChronicle.removeRootDirectory', removeRootDirectory),
+		vscode.commands.registerCommand('workspaceChronicle.listRootDirectories', listRootDirectories)
 	);
 }
 
