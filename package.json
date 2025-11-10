@@ -22,7 +22,8 @@
         "onCommand:workspaceChronicle.copyFullPath",
         "onCommand:workspaceChronicle.filterByTag",
         "onCommand:workspaceChronicle.quickOpenRecent",
-        "onCommand:workspaceChronicle.quickOpenWorkspaces"
+        "onCommand:workspaceChronicle.quickOpenWorkspaces",
+        "onCommand:workspaceChronicle.clearAllFilters"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -57,7 +58,7 @@
             },
             {
                 "command": "workspaceChronicle.filterByTag",
-                "title": "Workspace Chronicle: Filter by Tag"
+                "title": "Workspace Chronicle: Filter by Label or Color"
             },
             {
                 "command": "workspaceChronicle.quickOpenRecent",
@@ -66,6 +67,10 @@
             {
                 "command": "workspaceChronicle.quickOpenWorkspaces",
                 "title": "Workspace Chronicle: Search Workspaces"
+            },
+            {
+                "command": "workspaceChronicle.clearAllFilters",
+                "title": "Clear All Filters"
             }
         ],
         "configuration": {
@@ -109,6 +114,13 @@
             ]
         },
         "menus": {
+            "view/title": [
+                {
+                    "command": "workspaceChronicle.clearAllFilters",
+                    "when": "view == workspaceChronicle.workspaces || view == workspaceChronicle.history",
+                    "group": "navigation"
+                }
+            ],
             "view/item/context": [
                 {
                     "command": "workspaceChronicle.setLabel",

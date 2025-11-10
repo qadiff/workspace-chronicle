@@ -9,6 +9,7 @@ import { registerSetColor } from './commands/setColor';
 import { registerFilterHistory } from './commands/filterHistory';
 import { registerCopyFullPath } from './commands/copyFullPath';
 import { registerFilterByTag } from './commands/filterByTag';
+import { registerClearFilters } from './commands/clearFilters';
 import { HistoryStore } from './store/HistoryStore';
 import { MetaStore } from './store/MetaStore';
 
@@ -45,6 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
 	registerSetColor(context, meta, workspacesProvider, historyProvider);
 	registerFilterHistory(context, historyProvider);
 	registerFilterByTag(context, meta, workspacesProvider, historyProvider);
+	registerClearFilters(context, workspacesProvider, historyProvider);
 	registerCopyFullPath(context);
 
 	context.subscriptions.push(
