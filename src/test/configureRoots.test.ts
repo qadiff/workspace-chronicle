@@ -57,6 +57,7 @@ suite('ConfigureRoots Test Suite', () => {
 
 	test('should add a new root directory', async () => {
 		const testPath = '/test/new/path';
+		const normalizedPath = vscode.Uri.file(testPath).fsPath;
 
 		// Mock showOpenDialog
 		vscode.window.showOpenDialog = () => {
@@ -74,13 +75,14 @@ suite('ConfigureRoots Test Suite', () => {
 
 		assert.strictEqual(mockConfig.roots.length, 2);
 		assert.ok(mockConfig.roots.includes('${userHome}'));
-		assert.ok(mockConfig.roots.includes(testPath));
+		assert.ok(mockConfig.roots.includes(normalizedPath));
 		assert.ok(lastMessage.includes('Added root directory'));
 	});
 
 	test('should not add duplicate root directory', async () => {
 		const testPath = '/test/existing/path';
-		mockConfig.roots = ['${userHome}', testPath];
+		const normalizedPath = vscode.Uri.file(testPath).fsPath;
+		mockConfig.roots = ['${userHome}', normalizedPath];
 
 		// Mock showOpenDialog - try to add existing path
 		vscode.window.showOpenDialog = () => {
@@ -202,6 +204,7 @@ suite('ConfigureRoots Test Suite', () => {
 
 	test('should add multiple directories sequentially', async () => {
 		const paths = ['/test/path1', '/test/path2', '/test/path3'];
+		const normalizedPaths = paths.map(p => vscode.Uri.file(p).fsPath);
 
 		for (const path of paths) {
 			// Mock showOpenDialog for each path
@@ -219,8 +222,8 @@ suite('ConfigureRoots Test Suite', () => {
 
 		assert.strictEqual(mockConfig.roots.length, 4); // ${userHome} + 3 paths
 		assert.ok(mockConfig.roots.includes('${userHome}'));
-		for (const path of paths) {
-			assert.ok(mockConfig.roots.includes(path));
+		for (const normalizedPath of normalizedPaths) {
+			assert.ok(mockConfig.roots.includes(normalizedPath));
 		}
 	});
 
@@ -248,6 +251,7 @@ suite('ConfigureRoots Test Suite', () => {
 	test('should preserve other configuration when updating roots', async () => {
 		// Simulate other configuration existing
 		const testPath = '/test/new/path';
+		const normalizedPath = vscode.Uri.file(testPath).fsPath;
 
 		// Mock showOpenDialog
 		vscode.window.showOpenDialog = () => {
@@ -264,7 +268,7 @@ suite('ConfigureRoots Test Suite', () => {
 
 		// Verify only roots changed
 		assert.notDeepStrictEqual(mockConfig.roots, beforeRoots);
-		assert.ok(mockConfig.roots.includes(testPath));
+		assert.ok(mockConfig.roots.includes(normalizedPath));
 	});
 });
 
