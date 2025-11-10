@@ -31,7 +31,7 @@ export async function addRootDirectory(): Promise<void> {
 }
 
 /**
- * ルートディレクトリを削除するコマンド
+ * Command to remove a root directory
  */
 export async function removeRootDirectory(): Promise<void> {
     const config = vscode.workspace.getConfiguration('workspaceChronicle');
