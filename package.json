@@ -30,7 +30,9 @@
         "onCommand:workspaceChronicle.filterByTag",
         "onCommand:workspaceChronicle.quickOpenRecent",
         "onCommand:workspaceChronicle.quickOpenWorkspaces",
-        "onCommand:workspaceChronicle.clearAllFilters"
+        "onCommand:workspaceChronicle.clearAllFilters",
+        "onCommand:workspaceChronicle.exportData",
+        "onCommand:workspaceChronicle.importData"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -78,6 +80,14 @@
             {
                 "command": "workspaceChronicle.clearAllFilters",
                 "title": "Clear All Filters"
+            },
+            {
+                "command": "workspaceChronicle.exportData",
+                "title": "Workspace Chronicle: Export Data"
+            },
+            {
+                "command": "workspaceChronicle.importData",
+                "title": "Workspace Chronicle: Import Data"
             }
         ],
         "configuration": {

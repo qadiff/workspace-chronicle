@@ -10,6 +10,7 @@ import { registerFilterHistory } from './commands/filterHistory';
 import { registerCopyFullPath } from './commands/copyFullPath';
 import { registerFilterByTag } from './commands/filterByTag';
 import { registerClearFilters } from './commands/clearFilters';
+import { registerExportImport } from './commands/exportImport';
 import { HistoryStore } from './store/HistoryStore';
 import { MetaStore } from './store/MetaStore';
 
@@ -47,6 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
 	registerFilterHistory(context, historyProvider);
 	registerFilterByTag(context, meta, workspacesProvider, historyProvider);
 	registerClearFilters(context, workspacesProvider, historyProvider);
+	registerExportImport(context, meta, history);
 	registerCopyFullPath(context);
 
 	context.subscriptions.push(
