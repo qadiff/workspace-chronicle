@@ -131,22 +131,18 @@ export function registerExportImport(
 				}
 
 				// Import metadata
-				let importedMeta = 0;
 				for (const [path, metadata] of Object.entries(importData.meta)) {
 					metaStore.set(path, metadata);
-					importedMeta++;
 				}
 
 				// Import history
-				let importedHistory = 0;
 				for (const entry of importData.history) {
 					historyStore.add(entry);
-					importedHistory++;
 				}
 
 				// Show success message
 				vscode.window.showInformationMessage(
-					`Successfully imported ${importedMeta} metadata and ${importedHistory} history entries.\n\nExported at: ${importData.exportedAt}`
+					`Successfully imported ${metaCount} metadata and ${historyCount} history entries.\n\nExported at: ${importData.exportedAt}`
 				);
 			} catch (error) {
 				vscode.window.showErrorMessage(
