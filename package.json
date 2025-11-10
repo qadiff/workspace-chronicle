@@ -32,7 +32,10 @@
         "onCommand:workspaceChronicle.quickOpenWorkspaces",
         "onCommand:workspaceChronicle.clearAllFilters",
         "onCommand:workspaceChronicle.exportData",
-        "onCommand:workspaceChronicle.importData"
+        "onCommand:workspaceChronicle.importData",
+        "onCommand:workspaceChronicle.addRootDirectory",
+        "onCommand:workspaceChronicle.removeRootDirectory",
+        "onCommand:workspaceChronicle.listRootDirectories"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -88,6 +91,18 @@
             {
                 "command": "workspaceChronicle.importData",
                 "title": "Workspace Chronicle: Import Data"
+            },
+            {
+                "command": "workspaceChronicle.addRootDirectory",
+                "title": "Workspace Chronicle: Add Root Directory"
+            },
+            {
+                "command": "workspaceChronicle.removeRootDirectory",
+                "title": "Workspace Chronicle: Remove Root Directory"
+            },
+            {
+                "command": "workspaceChronicle.listRootDirectories",
+                "title": "Workspace Chronicle: List Root Directories"
             }
         ],
         "configuration": {
