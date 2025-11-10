@@ -1,0 +1,15 @@
+# 除外するファイル・ディレクトリ
+node_modules/**
+pnpm-lock.yaml
+.pnpm-store/**
+.devcontainer/**
+.vscode/**
+.husky/**
+.github/**
+.idea/**
+test/**
+tests/**
+*.log
+*.tmp
+Dockerfile
+**/*.ts
