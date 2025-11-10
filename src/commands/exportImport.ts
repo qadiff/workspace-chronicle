@@ -110,7 +110,12 @@ export function registerExportImport(
 				const importData = JSON.parse(fileContent) as ExportData;
 
 				// Validate data structure
-				if (!importData.version || !importData.meta || !importData.history) {
+				if (
+					!importData.version ||
+					typeof importData.meta !== 'object' ||
+					importData.meta === null ||
+					!Array.isArray(importData.history)
+				) {
 					vscode.window.showErrorMessage('Invalid import file format');
 					return;
 				}
