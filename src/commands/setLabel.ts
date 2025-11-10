@@ -7,10 +7,18 @@ export function registerSetLabel(
 	...refreshers: { refresh(): void }[]
 ) {
 	context.subscriptions.push(
-		vscode.commands.registerCommand('workspaceChronicle.setLabel', async (fullPath?: string) => {
-			if (!fullPath) {
+		vscode.commands.registerCommand('workspaceChronicle.setLabel', async (item?: any) => {
+			let fullPath: string | undefined;
+
+			// Called from context menu (TreeItem) or command palette
+			if (item && typeof item === 'object' && 'fullPath' in item) {
+				fullPath = item.fullPath;
+			} else if (typeof item === 'string') {
+				fullPath = item;
+			} else {
 				fullPath = await vscode.window.showInputBox({ prompt: 'Target workspace path' });
 			}
+
 			if (!fullPath) {
 				return;
 			}

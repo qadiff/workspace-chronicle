@@ -20,7 +20,10 @@
         "onCommand:workspaceChronicle.filterHistory",
         "onCommand:workspaceChronicle.toggleSort",
         "onCommand:workspaceChronicle.copyFullPath",
-        "onCommand:workspaceChronicle.filterByTag"
+        "onCommand:workspaceChronicle.filterByTag",
+        "onCommand:workspaceChronicle.quickOpenRecent",
+        "onCommand:workspaceChronicle.quickOpenWorkspaces",
+        "onCommand:workspaceChronicle.clearAllFilters"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -28,10 +31,6 @@
             {
                 "command": "workspaceChronicle.refresh",
                 "title": "Workspace Chronicle: Refresh"
-            },
-            {
-                "command": "workspaceChronicle.open",
-                "title": "Workspace Chronicle: Open Workspace"
             },
             {
                 "command": "workspaceChronicle.setOpenMode",
@@ -59,7 +58,19 @@
             },
             {
                 "command": "workspaceChronicle.filterByTag",
-                "title": "Workspace Chronicle: Filter by Tag"
+                "title": "Workspace Chronicle: Filter by Label or Color"
+            },
+            {
+                "command": "workspaceChronicle.quickOpenRecent",
+                "title": "Workspace Chronicle: Open Recent"
+            },
+            {
+                "command": "workspaceChronicle.quickOpenWorkspaces",
+                "title": "Workspace Chronicle: Search Workspaces"
+            },
+            {
+                "command": "workspaceChronicle.clearAllFilters",
+                "title": "Clear All Filters"
             }
         ],
         "configuration": {
@@ -103,7 +114,24 @@
             ]
         },
         "menus": {
+            "view/title": [
+                {
+                    "command": "workspaceChronicle.clearAllFilters",
+                    "when": "view == workspaceChronicle.workspaces || view == workspaceChronicle.history",
+                    "group": "navigation"
+                }
+            ],
             "view/item/context": [
+                {
+                    "command": "workspaceChronicle.setLabel",
+                    "when": "view == workspaceChronicle.workspaces && viewItem == workspaceItem",
+                    "group": "edit@1"
+                },
+                {
+                    "command": "workspaceChronicle.setColor",
+                    "when": "view == workspaceChronicle.workspaces && viewItem == workspaceItem",
+                    "group": "edit@2"
+                },
                 {
                     "command": "workspaceChronicle.copyFullPath",
                     "when": "view == workspaceChronicle.workspaces && viewItem == workspaceItem",

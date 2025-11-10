@@ -2,12 +2,14 @@ import * as vscode from 'vscode';
 import { WorkspacesProvider } from './tree/WorkspacesProvider';
 import { HistoryProvider } from './tree/HistoryProvider';
 import { registerOpenWorkspace } from './commands/openWorkspace';
+import { registerQuickOpenRecent, registerQuickOpenWorkspaces } from './commands/openRecent';
 import { registerSetOpenMode } from './commands/setOpenMode';
 import { registerSetLabel } from './commands/setLabel';
 import { registerSetColor } from './commands/setColor';
 import { registerFilterHistory } from './commands/filterHistory';
 import { registerCopyFullPath } from './commands/copyFullPath';
 import { registerFilterByTag } from './commands/filterByTag';
+import { registerClearFilters } from './commands/clearFilters';
 import { HistoryStore } from './store/HistoryStore';
 import { MetaStore } from './store/MetaStore';
 
@@ -37,11 +39,14 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	registerOpenWorkspace(context, history, meta);
+	registerQuickOpenRecent(context, history, meta);
+	registerQuickOpenWorkspaces(context, workspacesProvider, meta);
 	registerSetOpenMode(context);
 	registerSetLabel(context, meta, workspacesProvider, historyProvider);
 	registerSetColor(context, meta, workspacesProvider, historyProvider);
 	registerFilterHistory(context, historyProvider);
 	registerFilterByTag(context, meta, workspacesProvider, historyProvider);
+	registerClearFilters(context, workspacesProvider, historyProvider);
 	registerCopyFullPath(context);
 
 	context.subscriptions.push(
