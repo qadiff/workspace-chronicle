@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { WorkspacesProvider } from './tree/WorkspacesProvider';
 import { HistoryProvider } from './tree/HistoryProvider';
 import { registerOpenWorkspace } from './commands/openWorkspace';
+import { registerQuickOpenRecent, registerQuickOpenWorkspaces } from './commands/openRecent';
 import { registerSetOpenMode } from './commands/setOpenMode';
 import { registerSetLabel } from './commands/setLabel';
 import { registerSetColor } from './commands/setColor';
@@ -37,6 +38,8 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	registerOpenWorkspace(context, history, meta);
+	registerQuickOpenRecent(context, history, meta);
+	registerQuickOpenWorkspaces(context, workspacesProvider, meta);
 	registerSetOpenMode(context);
 	registerSetLabel(context, meta, workspacesProvider, historyProvider);
 	registerSetColor(context, meta, workspacesProvider, historyProvider);

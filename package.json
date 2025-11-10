@@ -20,7 +20,9 @@
         "onCommand:workspaceChronicle.filterHistory",
         "onCommand:workspaceChronicle.toggleSort",
         "onCommand:workspaceChronicle.copyFullPath",
-        "onCommand:workspaceChronicle.filterByTag"
+        "onCommand:workspaceChronicle.filterByTag",
+        "onCommand:workspaceChronicle.quickOpenRecent",
+        "onCommand:workspaceChronicle.quickOpenWorkspaces"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -28,10 +30,6 @@
             {
                 "command": "workspaceChronicle.refresh",
                 "title": "Workspace Chronicle: Refresh"
-            },
-            {
-                "command": "workspaceChronicle.open",
-                "title": "Workspace Chronicle: Open Workspace"
             },
             {
                 "command": "workspaceChronicle.setOpenMode",
@@ -60,6 +58,14 @@
             {
                 "command": "workspaceChronicle.filterByTag",
                 "title": "Workspace Chronicle: Filter by Tag"
+            },
+            {
+                "command": "workspaceChronicle.quickOpenRecent",
+                "title": "Workspace Chronicle: Open Recent"
+            },
+            {
+                "command": "workspaceChronicle.quickOpenWorkspaces",
+                "title": "Workspace Chronicle: Search Workspaces"
             }
         ],
         "configuration": {
