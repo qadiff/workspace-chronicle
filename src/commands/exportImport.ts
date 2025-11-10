@@ -25,7 +25,8 @@ interface ExportData {
 export function getDefaultDirectory(workspaceFile?: vscode.Uri): string | undefined {
 	if (workspaceFile && workspaceFile.scheme === 'file') {
 		// If workspace is open, use workspace file directory
-		return path.dirname(workspaceFile.fsPath);
+		// Normalize to forward slashes for cross-platform consistency
+		return path.dirname(workspaceFile.fsPath).replace(/\\/g, '/');
 	} else {
 		// Otherwise use user's home directory
 		return process.env.HOME || process.env.USERPROFILE;
