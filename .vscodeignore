@@ -13,3 +13,4 @@ tests/**
 *.tmp
 Dockerfile
 **/*.ts
+!**/*.d.ts
