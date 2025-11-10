@@ -53,7 +53,7 @@ export function registerExportImport(
 
 				const fileName = `workspace-chronicle-export-${new Date().toISOString().split('T')[0]}.json`;
 				const defaultUri = vscode.Uri.file(
-					defaultDir ? path.join(defaultDir, fileName) : fileName
+					defaultDir ? path.join(defaultDir, fileName) : path.join(process.cwd(), fileName)
 				);
 
 				const uri = await vscode.window.showSaveDialog({
