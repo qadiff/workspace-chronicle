@@ -14,7 +14,7 @@ export async function run(): Promise<void> {
 
 	files.forEach((f: string) => mocha.addFile(path.resolve(testsRoot, f)));
 
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		try {
 			mocha.run(failures => {
 				if (failures > 0) {
@@ -24,7 +24,7 @@ export async function run(): Promise<void> {
 				}
 			});
 		} catch (err) {
-			reject(err);
+			reject(err instanceof Error ? err : new Error(String(err)));
 		}
 	});
 }

@@ -1,25 +1,30 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 import { MetaStore } from '../store/MetaStore';
 
 suite('MetaStore Test Suite', () => {
 	let metaStore: MetaStore;
-	let mockContext: any;
+	let mockContext: Pick<vscode.ExtensionContext, 'globalState' | 'subscriptions'>;
 
 	setup(() => {
+		const data = new Map<string, unknown>();
 		mockContext = {
 			globalState: {
-				data: new Map(),
-				get(key: string) {
-					return this.data.get(key);
+				keys(): readonly string[] {
+					return Array.from(data.keys());
 				},
-				update(key: string, value: any) {
-					this.data.set(key, value);
+				get(key: string, defaultValue?: unknown) {
+					return data.has(key) ? data.get(key) : defaultValue;
+				},
+				update(key: string, value: unknown) {
+					data.set(key, value);
 					return Promise.resolve();
-				}
+				},
+				setKeysForSync(): void {}
 			},
 			subscriptions: []
 		};
-		metaStore = new MetaStore(mockContext as any);
+		metaStore = new MetaStore(mockContext as vscode.ExtensionContext);
 	});
 
 	test('should set and get label', () => {

@@ -4,7 +4,7 @@ import { MetaStore } from '../store/MetaStore';
 import * as path from 'path';
 
 
-export function registerOpenWorkspace(context: vscode.ExtensionContext, history: HistoryStore, meta: MetaStore) {
+export function registerOpenWorkspace(context: vscode.ExtensionContext, history: HistoryStore, _meta: MetaStore) {
 context.subscriptions.push(
 vscode.commands.registerCommand('workspaceChronicle.open', async (fullPath: string) => {
 const config = vscode.workspace.getConfiguration('workspaceChronicle');

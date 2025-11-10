@@ -8,7 +8,7 @@ export function registerClearFilters(
 	historyProvider: HistoryProvider
 ) {
 	context.subscriptions.push(
-		vscode.commands.registerCommand('workspaceChronicle.clearAllFilters', async () => {
+		vscode.commands.registerCommand('workspaceChronicle.clearAllFilters', () => {
 			// Clear all filters
 			workspacesProvider.clearTagFilter();
 			historyProvider.clearTagFilter();

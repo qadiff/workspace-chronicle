@@ -1,25 +1,30 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 import { HistoryStore } from '../store/HistoryStore';
 
 suite('HistoryStore Test Suite', () => {
 	let historyStore: HistoryStore;
-	let mockContext: any;
+	let mockContext: Pick<vscode.ExtensionContext, 'globalState' | 'subscriptions'>;
 
 	setup(() => {
+		const data = new Map<string, unknown>();
 		mockContext = {
 			globalState: {
-				data: new Map(),
-				get(key: string) {
-					return this.data.get(key);
+				keys(): readonly string[] {
+					return Array.from(data.keys());
 				},
-				update(key: string, value: any) {
-					this.data.set(key, value);
+				get(key: string, defaultValue?: unknown) {
+					return data.has(key) ? data.get(key) : defaultValue;
+				},
+				update(key: string, value: unknown) {
+					data.set(key, value);
 					return Promise.resolve();
-				}
+				},
+				setKeysForSync(): void {}
 			},
 			subscriptions: []
 		};
-		historyStore = new HistoryStore(mockContext as any);
+		historyStore = new HistoryStore(mockContext as vscode.ExtensionContext);
 	});
 
 	test('should add entry to history', () => {
@@ -174,9 +179,6 @@ suite('HistoryStore Test Suite', () => {
 	});
 
 	test('should respect history limit', () => {
-		// Mock configuration to return limit of 3
-		const originalConfig = mockContext.globalState.get('workspaceChronicle.historyLimit');
-		
 		// Add 5 entries
 		for (let i = 0; i < 5; i++) {
 			historyStore.add({
