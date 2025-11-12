@@ -2,7 +2,7 @@
     // Workspace Chronicle 設定
     "workspaceChronicle.roots": [
       "~/dev",       // 実際に .code-workspace ファイルがあるフォルダ
-      "~",
+      "~/doc",
     ],
     "workspaceChronicle.defaultOpenMode": "newWindow",
     "workspaceChronicle.historyLimit": 500
