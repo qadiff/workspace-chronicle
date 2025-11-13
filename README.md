@@ -8,7 +8,7 @@
 
 <!-- License / PR welcome -->
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](.)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/qadiff/workspace-chronicle/pulls)
 
 ## 機能（MVP）
 - `Workspaces` ビュー：指定ルート配下から `.code-workspace` を探索・一覧
