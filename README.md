@@ -2,6 +2,14 @@
 
 多数の `.code-workspace` を収集して一覧表示し、**新規ウィンドウ（既定）**または**既存ウィンドウ**で開けます。開いた履歴を記録・表示します。
 
+<!-- GitHub CI / Release -->
+[![CI](https://github.com/qadiff/workspace-chronicle/actions/workflows/release.yml/badge.svg)](https://github.com/qadiff/workspace-chronicle/actions/workflows/release.yml)
+[![GitHub release](https://img.shields.io/github/v/release/qadiff/workspace-chronicle?include_prereleases)](https://github.com/qadiff/workspace-chronicle/releases)
+
+<!-- License / PR welcome -->
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](.)
+
 ## 機能（MVP）
 - `Workspaces` ビュー：指定ルート配下から `.code-workspace` を探索・一覧
 - `Workspace History` ビュー：開いた日時・モードを履歴表示
