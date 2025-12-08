@@ -17,7 +17,7 @@ export function registerOpenWorkspace(context: vscode.ExtensionContext, history:
 					vscode.window.showErrorMessage(`Not a file: ${fullPath}`);
 					return;
 				}
-			} catch (error) {
+			} catch (_err) {
 				vscode.window.showErrorMessage(`Workspace file not found: ${fullPath}`);
 				return;
 			}
@@ -33,9 +33,9 @@ export function registerOpenWorkspace(context: vscode.ExtensionContext, history:
 					mode,
 					openedAt: new Date().toISOString()
 				});
-			} catch (error) {
+			} catch (_err) {
 				vscode.window.showErrorMessage(
-					`Failed to open workspace: ${error instanceof Error ? error.message : String(error)}`
+					`Failed to open workspace: ${_err instanceof Error ? _err.message : String(_err)}`
 				);
 			}
 		})

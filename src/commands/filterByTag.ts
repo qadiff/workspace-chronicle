@@ -63,7 +63,7 @@ export function registerFilterByTag(
 	historyProvider: HistoryProvider
 ) {
 	// Filter for Workspaces view only
-	const runWorkspacesFilter = async () => {
+	const runWorkspacesFilter = () => {
 		const items = buildFilterItems(meta);
 
 		if (items.length === 1) {
@@ -100,7 +100,7 @@ export function registerFilterByTag(
 	};
 
 	// Filter for History view only
-	const runHistoryFilter = async () => {
+	const runHistoryFilter = () => {
 		const items = buildFilterItems(meta);
 
 		if (items.length === 1) {
