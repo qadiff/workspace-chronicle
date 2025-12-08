@@ -1,17 +1,38 @@
 # 除外するファイル・ディレクトリ
-node_modules/**
-pnpm-lock.yaml
-.pnpm-store/**
-.devcontainer/**
 .vscode/**
+.vscode-test/**
+.devcontainer/**
+.pnpm-store/**
+node_modules/**
 .husky/**
 .github/**
+.git/**
+.gitignore
 .idea/**
-test/**
-tests/**
 *.log
 *.tmp
-Dockerfile
+
+# ソース/テスト（ビルド成果物だけを含める）
+src/**
 **/*.ts
 !**/*.d.ts
-src/**
+**/*.map
+test/**
+tests/**
+src/test/**
+out/test/**
+
+# ドキュメントやサイト資産
+docs/**
+webpages/**
+
+# パッケージマネージャのロック/設定
+pnpm-lock.yaml
+pnpm-workspace.yaml
+npm-shrinkwrap.json
+package-lock.json
+
+# その他
+Dockerfile
+*.vsix
+workspace-chronicle.code-workspace

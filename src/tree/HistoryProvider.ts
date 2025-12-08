@@ -61,7 +61,7 @@ export class HistoryProvider implements vscode.TreeDataProvider<HistoryItem> {
 			});
 		}
 
-		return entries.map(e => new HistoryItem(e, this.meta.get(e.path)?.color, this.filterKeyword ? entries.length : undefined));
+		return entries.map(e => new HistoryItem(e, this.meta.get(e.path)?.color));
 	}
 
 	toggleSort(): SortMode {
@@ -72,9 +72,10 @@ export class HistoryProvider implements vscode.TreeDataProvider<HistoryItem> {
 }
 
 class HistoryItem extends vscode.TreeItem {
-	constructor(public readonly entry: HistoryEntry, color?: string, totalCount?: number) {
-		const label = `${fmtDate(entry.openedAt)} – ${entry.name}`;
-		super(totalCount !== undefined ? `${label} (${totalCount})` : label, vscode.TreeItemCollapsibleState.None);
+	constructor(public readonly entry: HistoryEntry, color?: string) {
+		const baseLabel = `${fmtDate(entry.openedAt)} – ${entry.name}`;
+		const withCount = entry.count ? `${baseLabel} (${entry.count}x)` : baseLabel;
+		super(withCount, vscode.TreeItemCollapsibleState.None);
 		this.description = entry.path;
 		this.command = { command: 'workspaceChronicle.open', title: 'Open', arguments: [entry.path] };
 		this.tooltip = `${entry.name}\n${entry.path}\nmode: ${entry.mode}`;

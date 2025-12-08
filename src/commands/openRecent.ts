@@ -14,7 +14,7 @@ export function registerQuickOpenRecent(
 			const entries = history.getSorted();
 
 			if (entries.length === 0) {
-				vscode.window.showInformationMessage('No recent workspaces found.');
+				vscode.window.setStatusBarMessage('No recent workspaces found.', 3000);
 				return;
 			}
 
@@ -58,7 +58,7 @@ export function registerQuickOpenWorkspaces(
 			const workspaceItems = await workspacesProvider.getChildren();
 
 			if (workspaceItems.length === 0) {
-				vscode.window.showInformationMessage('No workspaces found.');
+				vscode.window.setStatusBarMessage('No workspaces found.', 3000);
 				return;
 			}
 

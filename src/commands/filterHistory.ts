@@ -3,8 +3,7 @@ import { HistoryProvider } from '../tree/HistoryProvider';
 
 
 export function registerFilterHistory(context: vscode.ExtensionContext, historyProvider: HistoryProvider) {
-context.subscriptions.push(
-vscode.commands.registerCommand('workspaceChronicle.filterHistory', () => {
+const run = () => {
 const qp = vscode.window.createQuickPick();
 qp.placeholder = 'Enter keyword to filter history...';
 qp.canSelectMany = false;
@@ -35,6 +34,10 @@ qp.onDidAccept(() => {
 
 qp.onDidHide(() => qp.dispose());
 qp.show();
-})
+};
+
+context.subscriptions.push(
+vscode.commands.registerCommand('workspaceChronicle.filterHistory', run),
+vscode.commands.registerCommand('workspaceChronicle.filterHistoryView', run)
 );
 }

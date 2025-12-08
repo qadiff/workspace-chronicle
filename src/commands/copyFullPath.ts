@@ -8,7 +8,7 @@ export function registerCopyFullPath(context: vscode.ExtensionContext) {
 				return;
 			}
 			await vscode.env.clipboard.writeText(item.fullPath);
-			vscode.window.showInformationMessage(`Copied: ${item.fullPath}`);
+			vscode.window.setStatusBarMessage(`Copied: ${item.fullPath}`, 3000);
 		})
 	);
 }

@@ -12,25 +12,33 @@
     "type": "commonjs",
     "packageManager": "pnpm@9.12.0",
     "engines": {
-        "vscode": "^1.95.0"
+        "vscode": "^1.106.0"
     },
     "categories": [
         "Other"
     ],
     "activationEvents": [
-        "onStartupFinished",
+        "onView:workspaceChronicle.workspaces",
+        "onView:workspaceChronicle.history",
         "onCommand:workspaceChronicle.refresh",
         "onCommand:workspaceChronicle.open",
         "onCommand:workspaceChronicle.setOpenMode",
         "onCommand:workspaceChronicle.setLabel",
         "onCommand:workspaceChronicle.setColor",
         "onCommand:workspaceChronicle.filterHistory",
+        "onCommand:workspaceChronicle.filterHistoryView",
         "onCommand:workspaceChronicle.toggleSort",
         "onCommand:workspaceChronicle.copyFullPath",
         "onCommand:workspaceChronicle.filterByTag",
+        "onCommand:workspaceChronicle.filterByTagView",
+        "onCommand:workspaceChronicle.filterHistoryByTag",
+        "onCommand:workspaceChronicle.filterHistoryByTagView",
         "onCommand:workspaceChronicle.quickOpenRecent",
         "onCommand:workspaceChronicle.quickOpenWorkspaces",
         "onCommand:workspaceChronicle.clearAllFilters",
+        "onCommand:workspaceChronicle.clearAllFiltersPalette",
+        "onCommand:workspaceChronicle.clearWorkspacesFiltersView",
+        "onCommand:workspaceChronicle.clearHistoryFiltersView",
         "onCommand:workspaceChronicle.exportData",
         "onCommand:workspaceChronicle.importData",
         "onCommand:workspaceChronicle.addRootDirectory",
@@ -61,6 +69,10 @@
                 "title": "Workspace Chronicle: Filter History"
             },
             {
+                "command": "workspaceChronicle.filterHistoryView",
+                "title": "Filter"
+            },
+            {
                 "command": "workspaceChronicle.toggleSort",
                 "title": "Workspace Chronicle: Toggle Sort Mode"
             },
@@ -73,6 +85,18 @@
                 "title": "Workspace Chronicle: Filter by Label or Color"
             },
             {
+                "command": "workspaceChronicle.filterByTagView",
+                "title": "Filter"
+            },
+            {
+                "command": "workspaceChronicle.filterHistoryByTag",
+                "title": "Workspace Chronicle: Filter History by Label or Color"
+            },
+            {
+                "command": "workspaceChronicle.filterHistoryByTagView",
+                "title": "Filter by Tag"
+            },
+            {
                 "command": "workspaceChronicle.quickOpenRecent",
                 "title": "Workspace Chronicle: Open Recent"
             },
@@ -83,6 +107,18 @@
             {
                 "command": "workspaceChronicle.clearAllFilters",
                 "title": "Clear All Filters"
+            },
+            {
+                "command": "workspaceChronicle.clearAllFiltersPalette",
+                "title": "Workspace Chronicle: Clear All Filters"
+            },
+            {
+                "command": "workspaceChronicle.clearWorkspacesFiltersView",
+                "title": "Clear"
+            },
+            {
+                "command": "workspaceChronicle.clearHistoryFiltersView",
+                "title": "Clear"
             },
             {
                 "command": "workspaceChronicle.exportData",
@@ -107,7 +143,7 @@
         ],
         "configuration": {
             "type": "object",
-            "scope": "resource",
+            "scope": "application",
             "title": "Workspace Chronicle Settings",
             "properties": {
                 "workspaceChronicle.roots": {
@@ -148,9 +184,58 @@
         "menus": {
             "view/title": [
                 {
-                    "command": "workspaceChronicle.clearAllFilters",
-                    "when": "view == workspaceChronicle.workspaces || view == workspaceChronicle.history",
+                    "command": "workspaceChronicle.filterByTagView",
+                    "when": "view == workspaceChronicle.workspaces",
                     "group": "navigation"
+                },
+                {
+                    "command": "workspaceChronicle.clearWorkspacesFiltersView",
+                    "when": "view == workspaceChronicle.workspaces",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "workspaceChronicle.filterHistoryView",
+                    "when": "view == workspaceChronicle.history",
+                    "group": "navigation"
+                },
+                {
+                    "command": "workspaceChronicle.filterHistoryByTagView",
+                    "when": "view == workspaceChronicle.history",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "workspaceChronicle.clearHistoryFiltersView",
+                    "when": "view == workspaceChronicle.history",
+                    "group": "navigation@2"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "workspaceChronicle.clearAllFilters",
+                    "when": "false"
+                },
+                {
+                    "command": "workspaceChronicle.clearAllFiltersPalette"
+                },
+                {
+                    "command": "workspaceChronicle.filterByTagView",
+                    "when": "false"
+                },
+                {
+                    "command": "workspaceChronicle.filterHistoryView",
+                    "when": "false"
+                },
+                {
+                    "command": "workspaceChronicle.filterHistoryByTagView",
+                    "when": "false"
+                },
+                {
+                    "command": "workspaceChronicle.clearWorkspacesFiltersView",
+                    "when": "false"
+                },
+                {
+                    "command": "workspaceChronicle.clearHistoryFiltersView",
+                    "when": "false"
                 }
             ],
             "view/item/context": [
@@ -190,22 +275,21 @@
         ]
     },
     "dependencies": {
-        "globby": "^14.0.2"
+        "globby": "^16.0.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.1",
-        "@types/glob": "^9.0.0",
         "@types/mocha": "^10.0.10",
-        "@types/node": "^22.7.4",
-        "@types/vscode": "^1.95.0",
+        "@types/node": "^24.10.2",
+        "@types/vscode": "^1.106.1",
         "@vscode/test-electron": "^2.5.2",
-        "@vscode/vsce": "^3.7.0",
+        "@vscode/vsce": "^3.7.1",
         "eslint": "^9.12.0",
-        "glob": "^11.0.3",
+        "glob": "^13.0.0",
         "husky": "^9.1.7",
         "mocha": "^11.7.5",
         "typescript": "^5.6.3",
-        "typescript-eslint": "^8.46.3"
+        "typescript-eslint": "^8.49.0"
     },
     "pnpm": {
         "onlyBuiltDependencies": [

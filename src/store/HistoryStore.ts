@@ -18,7 +18,7 @@ export class HistoryStore {
 	constructor(private ctx: vscode.ExtensionContext) {}
 
 	add(e: HistoryEntry) {
-		const limit = vscode.workspace.getConfiguration('workspaceChronicle').get<number>('workspaceChronicle.historyLimit') || 500;
+		const limit = vscode.workspace.getConfiguration('workspaceChronicle').get<number>('historyLimit') || 500;
 		const list = this.getAll();
 		const existing = list.findIndex(item => item.path === e.path);
 
@@ -44,7 +44,7 @@ export class HistoryStore {
 	}
 
 	getSorted(): HistoryEntry[] {
-		const entries = this.getAll();
+		const entries = [...this.getAll()];
 		const sortMode = this.getSortMode();
 
 		switch (sortMode) {
