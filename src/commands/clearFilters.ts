@@ -7,14 +7,30 @@ export function registerClearFilters(
 	workspacesProvider: WorkspacesProvider,
 	historyProvider: HistoryProvider
 ) {
-	context.subscriptions.push(
-		vscode.commands.registerCommand('workspaceChronicle.clearAllFilters', () => {
-			// Clear all filters
-			workspacesProvider.clearTagFilter();
-			historyProvider.clearTagFilter();
-			historyProvider.setFilter('');
+	const clearAll = () => {
+		workspacesProvider.clearTagFilter();
+		workspacesProvider.clearNameFilter();
+		historyProvider.clearTagFilter();
+		historyProvider.setFilter('');
+		vscode.window.setStatusBarMessage('All filters cleared', 3000);
+	};
 
-			vscode.window.showInformationMessage('All filters cleared');
-		})
+	const clearWorkspaces = () => {
+		workspacesProvider.clearTagFilter();
+		workspacesProvider.clearNameFilter();
+		vscode.window.setStatusBarMessage('Workspaces filters cleared', 3000);
+	};
+
+	const clearHistory = () => {
+		historyProvider.clearTagFilter();
+		historyProvider.setFilter('');
+		vscode.window.setStatusBarMessage('History filters cleared', 3000);
+	};
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('workspaceChronicle.clearAllFilters', clearAll),
+		vscode.commands.registerCommand('workspaceChronicle.clearAllFiltersPalette', clearAll),
+		vscode.commands.registerCommand('workspaceChronicle.clearWorkspacesFiltersView', clearWorkspaces),
+		vscode.commands.registerCommand('workspaceChronicle.clearHistoryFiltersView', clearHistory)
 	);
 }

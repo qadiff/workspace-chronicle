@@ -8,14 +8,17 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 	private _onDidChangeTreeData = new vscode.EventEmitter<void>();
 	readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 	private tagFilter: { type: 'label' | 'color'; value: string } | null = null;
+	private nameFilter: string = '';
 	private cachedWorkspaceFiles: string[] = [];
 	private isRefreshing = false;
 	private refreshTimeout?: NodeJS.Timeout;
 	private refreshPromise?: Promise<void>;
+	private refreshGeneration = 0;
 
 	constructor(private meta: MetaStore, private history: HistoryStore) {}
 
 	refresh() {
+		const generation = ++this.refreshGeneration;
 		// Debounce: clear existing timeout
 		if (this.refreshTimeout) {
 			clearTimeout(this.refreshTimeout);
@@ -26,31 +29,58 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 
 		// Debounce refresh to avoid rapid consecutive calls
 		this.refreshTimeout = setTimeout(() => {
-			void this.refreshWorkspaceFiles();
+			void this.refreshWorkspaceFiles(generation);
 		}, 100);
 	}
 
-	private async refreshWorkspaceFiles(): Promise<void> {
+	private applyUpdate(files: string[], generation: number) {
+		if (generation !== this.refreshGeneration) {
+			return;
+		}
+		this.cachedWorkspaceFiles = files;
+		this._onDidChangeTreeData.fire();
+	}
+
+	private async refreshWorkspaceFiles(generation: number): Promise<void> {
 		if (this.isRefreshing) {
-			// Return existing promise to wait for current refresh
-			return this.refreshPromise;
+			// Wait for current refresh then run again with the latest generation
+			return (this.refreshPromise = this.refreshPromise?.then(() => this.refreshWorkspaceFiles(generation)));
 		}
 
 		this.isRefreshing = true;
 		this.refreshPromise = (async () => {
 			try {
 				const roots =
-					vscode.workspace.getConfiguration().get<string[]>('workspaceChronicle.roots') ||
+					vscode.workspace.getConfiguration('workspaceChronicle').get<string[]>('roots') ||
 					[];
 
-				// Search all roots in parallel using globby with progressive updates
-				const expandedRoots = roots.map(expandPath);
+				const expandedRoots = roots.map(expandPath).filter(Boolean);
+				const uniqueRoots = Array.from(new Set(expandedRoots));
+				const allFiles = new Set<string>();
 
-				// Use streaming approach for progressive updates
-				await findWorkspaceFilesProgressive(expandedRoots, (files) => {
-					this.cachedWorkspaceFiles = files;
-					this._onDidChangeTreeData.fire();
-				});
+				await Promise.all(
+					uniqueRoots.map(async (root) => {
+						const pattern = path.join(root, '**/*.code-workspace');
+
+						const files = await globby(pattern, {
+							ignore: ['**/node_modules/**', '**/.git/**', '**/bower_components/**', '**/vendor/**'],
+							absolute: true,
+							followSymbolicLinks: false,
+							onlyFiles: true,
+							suppressErrors: true
+						});
+
+						for (const file of files) {
+							allFiles.add(file);
+						}
+						this.applyUpdate(Array.from(allFiles), generation);
+					})
+				);
+
+				this.applyUpdate(Array.from(allFiles), generation);
+				console.log(
+					`[findWorkspaceFilesProgressive] found ${allFiles.size} workspace files across ${uniqueRoots.length} roots`
+				);
 			} catch (error) {
 				console.error('[WorkspacesProvider] Error refreshing workspace files:', error);
 			} finally {
@@ -67,8 +97,18 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 		this._onDidChangeTreeData.fire();
 	}
 
+	setNameFilter(keyword: string) {
+		this.nameFilter = keyword.toLowerCase();
+		this._onDidChangeTreeData.fire();
+	}
+
 	clearTagFilter() {
 		this.tagFilter = null;
+		this._onDidChangeTreeData.fire();
+	}
+
+	clearNameFilter() {
+		this.nameFilter = '';
 		this._onDidChangeTreeData.fire();
 	}
 
@@ -83,12 +123,23 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 
 		// Wait for initial refresh if cache is empty
 		if (this.cachedWorkspaceFiles.length === 0) {
-			await this.refreshWorkspaceFiles();
+			await this.refreshWorkspaceFiles(this.refreshGeneration);
 		}
 
 		const items: WorkspaceItem[] = [];
 		for (const file of this.cachedWorkspaceFiles) {
 			const meta = this.meta.get(file);
+
+			const displayLabel = meta?.label || path.basename(file);
+
+			// Apply name/path filter
+			if (this.nameFilter) {
+				const labelLower = displayLabel.toLowerCase();
+				const pathLower = file.toLowerCase();
+				if (!labelLower.includes(this.nameFilter) && !pathLower.includes(this.nameFilter)) {
+					continue;
+				}
+			}
 
 			// Apply tag filter
 			if (this.tagFilter) {
@@ -100,8 +151,7 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 				}
 			}
 
-			const label = meta?.label || path.basename(file);
-			const item = new WorkspaceItem(label, file, meta?.color);
+			const item = new WorkspaceItem(displayLabel, file, meta?.color);
 			items.push(item);
 		}
 
@@ -142,46 +192,6 @@ function encodeColor(color: string): string {
 	}
 	// If it's a named color, use it as-is
 	return color;
-}
-
-async function findWorkspaceFilesProgressive(
-	roots: string[],
-	onUpdate: (files: string[]) => void
-): Promise<void> {
-	try {
-		// Search each root progressively and update as we go
-		const allFiles: string[] = [];
-
-		for (const root of roots) {
-			const pattern = path.join(root, '**/*.code-workspace');
-
-			const files = await globby(pattern, {
-				ignore: [
-					'**/node_modules/**',
-					'**/.git/**',
-					'**/bower_components/**',
-					'**/vendor/**'
-				],
-				absolute: true,
-				followSymbolicLinks: false,
-				onlyFiles: true,
-				suppressErrors: true
-			});
-
-			// Add found files and trigger update
-			allFiles.push(...files);
-			if (files.length > 0) {
-				onUpdate([...allFiles]);
-			}
-		}
-
-		// Final update with all files
-		onUpdate(allFiles);
-		console.log(`[findWorkspaceFilesProgressive] found ${allFiles.length} workspace files across ${roots.length} roots`);
-	} catch (error) {
-		console.error('[findWorkspaceFilesProgressive] error:', error);
-		onUpdate([]);
-	}
 }
 
 function expandPath(p: string) {

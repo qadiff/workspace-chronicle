@@ -9,9 +9,9 @@ const picked = await vscode.window.showQuickPick([
 { label: 'Reuse Current Window', value: 'reuseWindow' }
 ], { placeHolder: 'Select default open mode' });
 if (!picked) return;
-const cfg = vscode.workspace.getConfiguration();
-await cfg.update('workspaceChronicle.defaultOpenMode', picked.value, vscode.ConfigurationTarget.Global);
-vscode.window.showInformationMessage(`Default open mode: ${picked.label}`);
+const cfg = vscode.workspace.getConfiguration('workspaceChronicle');
+await cfg.update('defaultOpenMode', picked.value, vscode.ConfigurationTarget.Global);
+vscode.window.setStatusBarMessage(`Default open mode: ${picked.label}`, 3000);
 })
 );
 }

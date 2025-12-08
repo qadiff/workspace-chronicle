@@ -34,6 +34,14 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(workspacesView, historyView);
 
 	context.subscriptions.push(
+		vscode.workspace.onDidChangeConfiguration((event) => {
+			if (event.affectsConfiguration('workspaceChronicle.roots')) {
+				workspacesProvider.refresh();
+			}
+		})
+	);
+
+	context.subscriptions.push(
 		vscode.commands.registerCommand('workspaceChronicle.refresh', () => {
 			workspacesProvider.refresh();
 			historyProvider.refresh();
@@ -55,7 +63,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('workspaceChronicle.toggleSort', () => {
 			const newMode = historyProvider.toggleSort();
-			vscode.window.showInformationMessage(`History sort mode: ${newMode}`);
+			vscode.window.setStatusBarMessage(`History sort mode: ${newMode}`, 3000);
 		})
 	);
 

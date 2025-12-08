@@ -74,8 +74,8 @@ export function registerExportImport(
 				const metaCount = Object.keys(exportData.meta).length;
 				const historyCount = exportData.history.length;
 
-				vscode.window.showInformationMessage(
-					`Exported ${metaCount} workspace metadata and ${historyCount} history entries to ${uri.fsPath}`
+				vscode.window.setStatusBarMessage(
+					`Exported ${metaCount} metadata and ${historyCount} history entries`, 3000
 				);
 			} catch (error) {
 				vscode.window.showErrorMessage(
@@ -147,8 +147,8 @@ export function registerExportImport(
 				}
 
 				// Show success message
-				vscode.window.showInformationMessage(
-					`Successfully imported ${metaCount} metadata and ${historyCount} history entries.\n\nExported at: ${importData.exportedAt}`
+				vscode.window.setStatusBarMessage(
+					`Imported ${metaCount} metadata and ${historyCount} history entries`, 3000
 				);
 			} catch (error) {
 				vscode.window.showErrorMessage(
