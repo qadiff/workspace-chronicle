@@ -25,11 +25,7 @@ jobs:
         run: pnpm i --frozen-lockfile
 
       - name: Package Extension
-<<<<<<< Updated upstream
-        run: pnpm dlx vsce package -o workspace-chronicle-${{ github.ref_name }}.vsix
-=======
         run: pnpm dlx vsce package --no-dependencies -o workspace-chronicle-${{ github.ref_name }}.vsix
->>>>>>> Stashed changes
 
       - name: Publish to Marketplace
         run: pnpm dlx vsce publish --no-dependencies
