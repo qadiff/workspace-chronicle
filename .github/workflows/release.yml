@@ -5,6 +5,9 @@ on:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -21,7 +24,16 @@ jobs:
       - name: Install dependencies
         run: pnpm i --frozen-lockfile
 
+      - name: Package Extension
+        run: pnpm dlx vsce package -o workspace-chronicle-${{ github.ref_name }}.vsix
+
       - name: Publish to Marketplace
         run: pnpm dlx vsce publish
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: workspace-chronicle-${{ github.ref_name }}.vsix
+          generate_release_notes: true
