@@ -21,18 +21,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9                   # 任意（プロジェクトに合わせる）
+
       - name: Setup Node.js (LTS)
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'        # ← LTS トラックに追従
           cache: 'pnpm'
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9                   # 任意（プロジェクトに合わせる）
-          run_install: true
-          install_command: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
         run: pnpm lint
