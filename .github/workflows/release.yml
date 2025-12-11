@@ -45,11 +45,6 @@ jobs:
       - name: Package Extension
         run: pnpm dlx vsce package --no-dependencies -o workspace-chronicle-${{ github.ref_name }}.vsix
 
-      - name: Publish to Marketplace
-        run: pnpm dlx vsce publish --no-dependencies
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
