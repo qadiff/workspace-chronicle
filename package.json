@@ -2,7 +2,7 @@
     "name": "workspace-chronicle",
     "displayName": "Workspace Chronicle",
     "description": "List & search .code-workspace files, open in new window by default, and keep searchable history.",
-    "publisher": "qadiffllc",
+    "publisher": "qadiff",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
