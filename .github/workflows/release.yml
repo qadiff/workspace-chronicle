@@ -12,17 +12,24 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: 'lts/*'
+          cache: 'pnpm'
 
       - name: Enable corepack
         run: corepack enable
 
       - name: Install dependencies
         run: pnpm i --frozen-lockfile
+
+      - name: Compile
+        run: pnpm compile
 
       - name: Package Extension
         run: pnpm dlx vsce package --no-dependencies -o workspace-chronicle-${{ github.ref_name }}.vsix
