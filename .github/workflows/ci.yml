@@ -5,41 +5,45 @@ on:
     branches: [ main, feat/** ]
   pull_request:
     branches: [ main ]
+  release:
+    types: [published]
 
 jobs:
+  # --- 1. CI (テスト用) ---
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node-version: 'lts/*'
-        cache: 'pnpm'
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v4
+      - name: Setup Node.js (LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'        # ← LTS トラックに追従
+          cache: 'pnpm'
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v6
-      with:
-        node-version: 'lts/*'
-        cache: 'pnpm'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9                   # 任意（プロジェクトに合わせる）
+          run_install: true
+          install_command: pnpm install --frozen-lockfile
 
-    - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
 
-    - name: Lint
-      run: pnpm lint
+      - name: Compile
+        run: pnpm compile
 
-    - name: Compile
-      run: pnpm compile
+      - name: Run tests (Linux)
+        if: runner.os == 'Linux'
+        run: pnpm test:linux
 
-    - name: Run tests (Linux)
-      run: pnpm test:linux
-      if: runner.os == 'Linux'
-
-    - name: Run tests (macOS/Windows)
-      run: pnpm test
-      if: runner.os != 'Linux'
+      - name: Run tests (macOS/Windows)
+        if: runner.os != 'Linux'
+        run: pnpm test
