@@ -84,11 +84,15 @@ export function registerFilterByTag(
 
 		qp.onDidAccept(() => {
 			const selected = qp.selectedItems[0];
-			if (selected?.type === 'clear') {
+			if (!selected) {
+				qp.hide();
+				return;
+			}
+			if (selected.type === 'clear') {
 				workspacesProvider.clearTagFilter();
 				workspacesProvider.clearNameFilter();
 				vscode.window.setStatusBarMessage('Workspaces filter cleared', 3000);
-			} else if ((selected?.type === 'label' || selected?.type === 'color') && selected.value) {
+			} else if ((selected.type === 'label' || selected.type === 'color') && selected.value) {
 				workspacesProvider.setTagFilter(selected.type, selected.value);
 				vscode.window.setStatusBarMessage(`Workspaces: Filtering by ${selected.type}: ${selected.value}`, 3000);
 			}
@@ -117,10 +121,14 @@ export function registerFilterByTag(
 
 		qp.onDidAccept(() => {
 			const selected = qp.selectedItems[0];
-			if (selected?.type === 'clear') {
+			if (!selected) {
+				qp.hide();
+				return;
+			}
+			if (selected.type === 'clear') {
 				historyProvider.clearTagFilter();
 				vscode.window.setStatusBarMessage('History filter cleared', 3000);
-			} else if ((selected?.type === 'label' || selected?.type === 'color') && selected.value) {
+			} else if ((selected.type === 'label' || selected.type === 'color') && selected.value) {
 				historyProvider.setTagFilter(selected.type, selected.value);
 				vscode.window.setStatusBarMessage(`History: Filtering by ${selected.type}: ${selected.value}`, 3000);
 			}
