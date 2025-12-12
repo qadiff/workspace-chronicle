@@ -265,7 +265,8 @@
         "test:linux": "npm run compile && xvfb-run -a node ./out/test/runTest.js",
         "package": "vsce package",
         "prepare": "husky",
-        "vscode:prepublish": "npm run compile"
+        "clean:vsce": "node -e \"const { rmSync } = require('fs'); rmSync('.vscode-test', { recursive: true, force: true });\"",
+        "vscode:prepublish": "npm run clean:vsce && npm run compile"
     },
     "lint-staged": {
         "**/*.{ts,tsx,js,jsx}": [
