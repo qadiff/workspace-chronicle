@@ -8,9 +8,8 @@
         "type": "git",
         "url": "https://github.com/qadiff/workspace-chronicle"
     },
-    "version": "0.0.1",
+    "version": "0.0.2",
     "type": "commonjs",
-    "packageManager": "pnpm@9.12.0",
     "engines": {
         "vscode": "^1.106.0"
     },
@@ -260,13 +259,13 @@
     "scripts": {
         "compile": "tsc -p .",
         "watch": "tsc -w",
-        "dev": "pnpm compile && echo 'Run F5 to launch Extension Host'",
+        "dev": "npm run compile && echo 'Run F5 to launch Extension Host'",
         "lint": "eslint .",
-        "test": "pnpm compile && node ./out/test/runTest.js",
-        "test:linux": "pnpm compile && xvfb-run -a node ./out/test/runTest.js",
+        "test": "npm run compile && node ./out/test/runTest.js",
+        "test:linux": "npm run compile && xvfb-run -a node ./out/test/runTest.js",
         "package": "vsce package",
         "prepare": "husky",
-        "vscode:prepublish": "pnpm compile"
+        "vscode:prepublish": "npm run compile"
     },
     "lint-staged": {
         "**/*.{ts,tsx,js,jsx}": [
@@ -291,7 +290,7 @@
         "typescript": "^5.6.3",
         "typescript-eslint": "^8.49.0"
     },
-    "pnpm": {
+    "npm": {
         "onlyBuiltDependencies": [
             "@vscode/vsce-sign",
             "keytar"
