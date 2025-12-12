@@ -21,29 +21,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Setup Node.js
+      - name: Setup Node.js (24.x)
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable corepack
-        run: corepack enable
+          node-version: '24.x'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: pnpm i --frozen-lockfile
+        run: npm ci
 
       - name: Compile
-        run: pnpm compile
+        run: npm run compile
 
       - name: Package Extension
-        run: pnpm dlx vsce package --no-dependencies -o workspace-chronicle-${{ github.ref_name }}.vsix
+        run: npm exec vsce package -- --no-dependencies -o workspace-chronicle-${{ github.ref_name }}.vsix
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

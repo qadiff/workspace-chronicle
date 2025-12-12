@@ -33,31 +33,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Setup Node.js (LTS)
+      - name: Setup Node.js (24.x)
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'        # ← LTS トラックに追従
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
+          node-version: '24.x'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Lint
-        run: pnpm lint
+        run: npm run lint
 
       - name: Compile
-        run: pnpm compile
+        run: npm run compile
 
       - name: Run tests (Linux)
         if: runner.os == 'Linux'
-        run: pnpm test:linux
+        run: npm run test:linux
 
       - name: Run tests (macOS/Windows)
         if: runner.os != 'Linux'
-        run: pnpm test
+        run: npm run test
