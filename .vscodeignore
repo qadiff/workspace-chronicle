@@ -1,7 +1,6 @@
 # 除外するファイル・ディレクトリ
 .vscode/**
 .vscode-test/**
-**/.vscode-test/**
 .devcontainer/**
 .pnpm-store/**
 node_modules/**
