@@ -5,7 +5,6 @@ Collects and lists multiple `.code-workspace` files, allowing you to open them i
 [日本語](README.md)
 
 <!-- GitHub CI / Release -->
-[![CI](https://github.com/qadiff/workspace-chronicle/actions/workflows/release.yml/badge.svg)](https://github.com/qadiff/workspace-chronicle/actions/workflows/release.yml)
 [![GitHub release](https://img.shields.io/github/v/release/qadiff/workspace-chronicle?include_prereleases)](https://github.com/qadiff/workspace-chronicle/releases)
 
 <!-- License / PR welcome -->

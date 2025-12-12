@@ -5,7 +5,6 @@
 [English](README.en.md)
 
 <!-- GitHub CI / Release -->
-[![CI](https://github.com/qadiff/workspace-chronicle/actions/workflows/release.yml/badge.svg)](https://github.com/qadiff/workspace-chronicle/actions/workflows/release.yml)
 [![GitHub release](https://img.shields.io/github/v/release/qadiff/workspace-chronicle?include_prereleases)](https://github.com/qadiff/workspace-chronicle/releases)
 
 <!-- License / PR welcome -->

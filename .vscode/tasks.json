@@ -2,35 +2,35 @@
 	"version": "2.0.0",
 	"tasks": [
     {
-      "label": "pnpm: compile",
+      "label": "npm: compile",
       "type": "shell",
-      "command": "pnpm",
+      "command": "npm",
       "args": ["compile"],
       "group": {
         "kind": "build",
         "isDefault": true
       },
       "problemMatcher": "$tsc",
-      "detail": "Compiles TypeScript via pnpm"
+      "detail": "Compiles TypeScript via npm"
     },
     {
-      "label": "pnpm: watch",
+      "label": "npm: watch",
       "type": "shell",
-      "command": "pnpm",
+      "command": "npm",
       "args": ["watch"],
       "group": "build",
       "isBackground": true,
       "problemMatcher": "$tsc-watch",
-      "detail": "Watches and rebuilds TypeScript files automatically"
+      "detail": "Watches and rebuilds TypeScript files automatically (npm)"
     },
     {
-      "label": "pnpm: lint",
+      "label": "npm: lint",
       "type": "shell",
-      "command": "pnpm",
+      "command": "npm",
       "args": ["lint"],
       "group": "test",
       "problemMatcher": [],
-      "detail": "Runs ESLint across the project"
+      "detail": "Runs ESLint across the project (npm)"
     }
   ]
 }
