@@ -42,6 +42,15 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 	}
 
 	private async refreshWorkspaceFiles(generation: number): Promise<void> {
+		// Only scan when a folder is open and no multi-root workspace file is active
+		const workspaceFolders = vscode.workspace.workspaceFolders;
+		const workspaceFile = vscode.workspace.workspaceFile;
+		const shouldSearch = Array.isArray(workspaceFolders) && workspaceFolders.length > 0 && !workspaceFile;
+		if (!shouldSearch) {
+			this.applyUpdate([], generation);
+			return;
+		}
+
 		if (this.isRefreshing) {
 			// Wait for current refresh then run again with the latest generation
 			return (this.refreshPromise = this.refreshPromise?.then(() => this.refreshWorkspaceFiles(generation)));
