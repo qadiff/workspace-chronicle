@@ -5,6 +5,7 @@
 .pnpm-store/**
 node_modules/**
 .husky/**
+.claude/**
 .github/**
 .git/**
 .gitignore
