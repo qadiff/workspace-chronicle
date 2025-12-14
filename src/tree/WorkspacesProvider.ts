@@ -4,6 +4,9 @@ import { globby } from 'globby';
 import { MetaStore } from '../store/MetaStore';
 import { HistoryStore } from '../store/HistoryStore';
 
+// Default scan timeout in milliseconds (30 seconds)
+const DEFAULT_SCAN_TIMEOUT_MS = 30000;
+
 export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem> {
 	private _onDidChangeTreeData = new vscode.EventEmitter<void>();
 	readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
@@ -14,6 +17,7 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 	private refreshTimeout?: NodeJS.Timeout;
 	private refreshPromise?: Promise<void>;
 	private refreshGeneration = 0;
+	private scanAborted = false;
 
 	constructor(private meta: MetaStore, private history: HistoryStore) {}
 
@@ -57,18 +61,22 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 		}
 
 		this.isRefreshing = true;
+		this.scanAborted = false;
 		this.refreshPromise = (async () => {
 			try {
-				const roots =
-					vscode.workspace.getConfiguration('workspaceChronicle').get<string[]>('roots') ||
-					[];
+				const config = vscode.workspace.getConfiguration('workspaceChronicle');
+				const roots = config.get<string[]>('roots') || [];
+				const timeoutMs = config.get<number>('scanTimeoutMs') ?? DEFAULT_SCAN_TIMEOUT_MS;
 
 				const expandedRoots = roots.map(expandPath).filter(Boolean);
 				const uniqueRoots = Array.from(new Set(expandedRoots));
 				const allFiles = new Set<string>();
 
-				await Promise.all(
+				const scanPromise = Promise.all(
 					uniqueRoots.map(async (root) => {
+						if (this.scanAborted) {
+							return;
+						}
 						const pattern = path.join(root, '**/*.code-workspace');
 
 						const files = await globby(pattern, {
@@ -79,6 +87,10 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 							suppressErrors: true
 						});
 
+						if (this.scanAborted) {
+							return;
+						}
+
 						for (const file of files) {
 							allFiles.add(file);
 						}
@@ -86,14 +98,33 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 					})
 				);
 
+				// Race between scan and timeout
+				const timeoutPromise = new Promise<'timeout'>((resolve) => {
+					setTimeout(() => resolve('timeout'), timeoutMs);
+				});
+
+				const result = await Promise.race([
+					scanPromise.then(() => 'done' as const),
+					timeoutPromise
+				]);
+
+				if (result === 'timeout') {
+					this.scanAborted = true;
+					console.log(
+						`[WorkspacesProvider] Scan timed out after ${timeoutMs}ms. Found ${allFiles.size} workspace files (partial).`
+					);
+				} else {
+					console.log(
+						`[WorkspacesProvider] Found ${allFiles.size} workspace files across ${uniqueRoots.length} roots`
+					);
+				}
+
 				this.applyUpdate(Array.from(allFiles), generation);
-				console.log(
-					`[findWorkspaceFilesProgressive] found ${allFiles.size} workspace files across ${uniqueRoots.length} roots`
-				);
 			} catch (error) {
 				console.error('[WorkspacesProvider] Error refreshing workspace files:', error);
 			} finally {
 				this.isRefreshing = false;
+				this.scanAborted = false;
 				this.refreshPromise = undefined;
 			}
 		})();

@@ -165,6 +165,12 @@
                     "type": "number",
                     "default": 500,
                     "description": "保存する履歴の最大件数"
+                },
+                "workspaceChronicle.scanTimeoutMs": {
+                    "type": "number",
+                    "default": 30000,
+                    "minimum": 1000,
+                    "description": "ワークスペーススキャンのタイムアウト時間（ミリ秒）。この時間を超えるとスキャンを中断し、それまでに見つかった結果を表示します。"
                 }
             }
         },
