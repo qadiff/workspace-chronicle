@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { readJson, writeJson, fileExists } from './FileStore';
 
 export type OpenMode = 'newWindow' | 'reuseWindow';
 export type SortMode = 'recent' | 'frequency' | 'name';
@@ -11,15 +12,70 @@ export interface HistoryEntry {
 	count?: number;
 }
 
-const KEY = 'workspaceChronicle.history';
-const SORT_KEY = 'workspaceChronicle.sortMode';
+interface HistoryData {
+	entries: HistoryEntry[];
+	sortMode: SortMode;
+}
+
+const HISTORY_FILE = 'history.json';
+const LEGACY_KEY = 'workspaceChronicle.history';
+const LEGACY_SORT_KEY = 'workspaceChronicle.sortMode';
 
 export class HistoryStore {
+	private cache: HistoryData | null = null;
+	private initialized = false;
+
 	constructor(private ctx: vscode.ExtensionContext) {}
 
-	add(e: HistoryEntry) {
+	// For testing: reset internal state
+	_reset(): void {
+		this.cache = null;
+		this.initialized = false;
+	}
+
+	async initialize(): Promise<void> {
+		if (this.initialized) {
+			return;
+		}
+
+		const exists = await fileExists(HISTORY_FILE);
+		if (!exists) {
+			// Migrate from globalState if available
+			const legacyEntries = this.ctx.globalState.get<HistoryEntry[]>(LEGACY_KEY);
+			const legacySortMode = this.ctx.globalState.get<SortMode>(LEGACY_SORT_KEY);
+
+			if (legacyEntries && legacyEntries.length > 0) {
+				this.cache = {
+					entries: legacyEntries,
+					sortMode: legacySortMode || 'recent'
+				};
+				await this.save();
+			}
+		}
+
+		this.initialized = true;
+	}
+
+	private async load(): Promise<HistoryData> {
+		if (this.cache) {
+			return this.cache;
+		}
+
+		this.cache = await readJson<HistoryData>(HISTORY_FILE, { entries: [], sortMode: 'recent' });
+		return this.cache;
+	}
+
+	private async save(): Promise<void> {
+		if (this.cache) {
+			await writeJson(HISTORY_FILE, this.cache);
+		}
+	}
+
+	async add(e: HistoryEntry): Promise<void> {
+		await this.initialize();
+		const data = await this.load();
 		const limit = vscode.workspace.getConfiguration('workspaceChronicle').get<number>('historyLimit') || 500;
-		const list = this.getAll();
+		const list = data.entries;
 		const existing = list.findIndex(item => item.path === e.path);
 
 		if (existing !== -1) {
@@ -36,16 +92,21 @@ export class HistoryStore {
 		if (list.length > limit) {
 			list.length = limit;
 		}
-		this.ctx.globalState.update(KEY, list);
+
+		await this.save();
 	}
 
-	getAll(): HistoryEntry[] {
-		return this.ctx.globalState.get<HistoryEntry[]>(KEY) || [];
+	async getAll(): Promise<HistoryEntry[]> {
+		await this.initialize();
+		const data = await this.load();
+		return data.entries;
 	}
 
-	getSorted(): HistoryEntry[] {
-		const entries = [...this.getAll()];
-		const sortMode = this.getSortMode();
+	async getSorted(): Promise<HistoryEntry[]> {
+		await this.initialize();
+		const data = await this.load();
+		const entries = [...data.entries];
+		const sortMode = data.sortMode;
 
 		switch (sortMode) {
 			case 'frequency':
@@ -58,20 +119,26 @@ export class HistoryStore {
 		}
 	}
 
-	getSortMode(): SortMode {
-		return this.ctx.globalState.get<SortMode>(SORT_KEY) || 'recent';
+	async getSortMode(): Promise<SortMode> {
+		await this.initialize();
+		const data = await this.load();
+		return data.sortMode;
 	}
 
-	setSortMode(mode: SortMode) {
-		this.ctx.globalState.update(SORT_KEY, mode);
+	async setSortMode(mode: SortMode): Promise<void> {
+		await this.initialize();
+		const data = await this.load();
+		data.sortMode = mode;
+		await this.save();
 	}
 
-	toggleSort(): SortMode {
-		const current = this.getSortMode();
+	async toggleSort(): Promise<SortMode> {
+		await this.initialize();
+		const current = await this.getSortMode();
 		const modes: SortMode[] = ['recent', 'frequency', 'name'];
 		const currentIndex = modes.indexOf(current);
 		const nextMode = modes[(currentIndex + 1) % modes.length];
-		this.setSortMode(nextMode);
+		await this.setSortMode(nextMode);
 		return nextMode;
 	}
 }

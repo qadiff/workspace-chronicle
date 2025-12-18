@@ -8,9 +8,9 @@ interface QuickPickItemWithTag extends vscode.QuickPickItem {
 	value?: string;
 }
 
-function buildFilterItems(meta: MetaStore): QuickPickItemWithTag[] {
-	const labels = meta.getAllLabels();
-	const colors = meta.getAllColors();
+async function buildFilterItems(meta: MetaStore): Promise<QuickPickItemWithTag[]> {
+	const labels = await meta.getAllLabels();
+	const colors = await meta.getAllColors();
 
 	const items: QuickPickItemWithTag[] = [];
 
@@ -63,8 +63,8 @@ export function registerFilterByTag(
 	historyProvider: HistoryProvider
 ) {
 	// Filter for Workspaces view only
-	const runWorkspacesFilter = () => {
-		const items = buildFilterItems(meta);
+	const runWorkspacesFilter = async () => {
+		const items = await buildFilterItems(meta);
 
 		if (items.length === 1) {
 			vscode.window.showInformationMessage('No labels or colors found. Set labels or colors on workspaces first.');
@@ -104,8 +104,8 @@ export function registerFilterByTag(
 	};
 
 	// Filter for History view only
-	const runHistoryFilter = () => {
-		const items = buildFilterItems(meta);
+	const runHistoryFilter = async () => {
+		const items = await buildFilterItems(meta);
 
 		if (items.length === 1) {
 			vscode.window.showInformationMessage('No labels or colors found. Set labels or colors on workspaces first.');

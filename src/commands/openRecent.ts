@@ -11,7 +11,7 @@ export function registerQuickOpenRecent(
 ) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('workspaceChronicle.quickOpenRecent', async () => {
-			const entries = history.getSorted();
+			const entries = await history.getSorted();
 
 			if (entries.length === 0) {
 				vscode.window.setStatusBarMessage('No recent workspaces found.', 3000);
@@ -22,18 +22,19 @@ export function registerQuickOpenRecent(
 				fullPath: string;
 			}
 
-			const items: QuickPickItemWithPath[] = entries.map(entry => {
-				const metadata = meta.get(entry.path);
+			const items: QuickPickItemWithPath[] = [];
+			for (const entry of entries) {
+				const metadata = await meta.get(entry.path);
 				const displayName = metadata?.label || entry.name;
 				const formattedDate = formatDate(entry.openedAt);
 
-				return {
+				items.push({
 					label: `$(folder) ${displayName}`,
 					description: formattedDate,
 					detail: entry.path,
 					fullPath: entry.path
-				};
-			});
+				});
+			}
 
 			const selected = await vscode.window.showQuickPick(items, {
 				placeHolder: 'Select a workspace to open',
@@ -66,17 +67,18 @@ export function registerQuickOpenWorkspaces(
 				fullPath: string;
 			}
 
-			const items: QuickPickItemWithPath[] = workspaceItems.map(item => {
-				const metadata = meta.get(item.fullPath);
+			const items: QuickPickItemWithPath[] = [];
+			for (const item of workspaceItems) {
+				const metadata = await meta.get(item.fullPath);
 				const displayName = metadata?.label || path.basename(item.fullPath);
 
-				return {
+				items.push({
 					label: `$(folder) ${displayName}`,
 					description: metadata?.color || '',
 					detail: item.fullPath,
 					fullPath: item.fullPath
-				};
-			});
+				});
+			}
 
 			const selected = await vscode.window.showQuickPick(items, {
 				placeHolder: 'Select a workspace to open',

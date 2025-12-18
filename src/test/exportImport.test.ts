@@ -2,16 +2,24 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import * as os from 'os';
 import { MetaStore } from '../store/MetaStore';
 import { HistoryStore } from '../store/HistoryStore';
+import { setStorageDirOverride } from '../store/FileStore';
 
 suite('Export/Import Test Suite', () => {
 	let mockContext: Pick<vscode.ExtensionContext, 'globalState' | 'subscriptions'>;
 	let metaStore: MetaStore;
 	let historyStore: HistoryStore;
 	let testDir: string;
+	let storageDir: string;
 
 	setup(async () => {
+		// Create unique storage directory for each test
+		storageDir = path.join(os.tmpdir(), `workspace-chronicle-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+		await fs.mkdir(storageDir, { recursive: true });
+		setStorageDirOverride(storageDir);
+
 		const data = new Map<string, unknown>();
 		mockContext = {
 			globalState: {
@@ -38,20 +46,26 @@ suite('Export/Import Test Suite', () => {
 	});
 
 	teardown(async () => {
-		// Clean up test directory
+		setStorageDirOverride(null);
+		// Clean up test directories
 		try {
 			await fs.rm(testDir, { recursive: true });
-		} catch (_err) {
+		} catch {
+			// Ignore errors
+		}
+		try {
+			await fs.rm(storageDir, { recursive: true });
+		} catch {
 			// Ignore errors
 		}
 	});
 
-	test('should export data to JSON format', () => {
+	test('should export data to JSON format', async () => {
 		// Setup test data
-		metaStore.set('/test/ws1.code-workspace', { label: 'Project 1', color: 'blue' });
-		metaStore.set('/test/ws2.code-workspace', { label: 'Project 2', color: 'red' });
+		await metaStore.set('/test/ws1.code-workspace', { label: 'Project 1', color: 'blue' });
+		await metaStore.set('/test/ws2.code-workspace', { label: 'Project 2', color: 'red' });
 
-		historyStore.add({
+		await historyStore.add({
 			name: 'ws1.code-workspace',
 			path: '/test/ws1.code-workspace',
 			mode: 'newWindow',
@@ -62,8 +76,8 @@ suite('Export/Import Test Suite', () => {
 		const exportData = {
 			version: '1.0',
 			exportedAt: new Date().toISOString(),
-			meta: metaStore.getAll(),
-			history: historyStore.getAll()
+			meta: await metaStore.getAll(),
+			history: await historyStore.getAll()
 		};
 
 		// Verify export structure
@@ -73,9 +87,9 @@ suite('Export/Import Test Suite', () => {
 		assert.strictEqual(exportData.history.length, 1);
 	});
 
-	test('should import and merge metadata', () => {
+	test('should import and merge metadata', async () => {
 		// Setup existing data
-		metaStore.set('/test/ws1.code-workspace', { label: 'Old Label', color: 'blue' });
+		await metaStore.set('/test/ws1.code-workspace', { label: 'Old Label', color: 'blue' });
 
 		// Import data
 		const importData = {
@@ -90,22 +104,22 @@ suite('Export/Import Test Suite', () => {
 
 		// Merge metadata
 		for (const [path, metadata] of Object.entries(importData.meta)) {
-			metaStore.set(path, metadata);
+			await metaStore.set(path, metadata);
 		}
 
 		// Verify merge
-		const ws1 = metaStore.get('/test/ws1.code-workspace');
+		const ws1 = await metaStore.get('/test/ws1.code-workspace');
 		assert.strictEqual(ws1?.label, 'New Label');
 		assert.strictEqual(ws1?.color, 'red');
 
-		const ws2 = metaStore.get('/test/ws2.code-workspace');
+		const ws2 = await metaStore.get('/test/ws2.code-workspace');
 		assert.strictEqual(ws2?.label, 'Project 2');
 		assert.strictEqual(ws2?.color, 'green');
 	});
 
-	test('should import and merge history', () => {
+	test('should import and merge history', async () => {
 		// Setup existing history
-		historyStore.add({
+		await historyStore.add({
 			name: 'ws1.code-workspace',
 			path: '/test/ws1.code-workspace',
 			mode: 'newWindow',
@@ -135,17 +149,17 @@ suite('Export/Import Test Suite', () => {
 
 		// Merge history
 		for (const entry of importData.history) {
-			historyStore.add(entry);
+			await historyStore.add(entry);
 		}
 
 		// Verify merge
-		const all = historyStore.getAll();
+		const all = await historyStore.getAll();
 		assert.strictEqual(all.length, 3);
 	});
 
-	test('should handle duplicate history entries correctly', () => {
+	test('should handle duplicate history entries correctly', async () => {
 		// Setup existing history
-		historyStore.add({
+		await historyStore.add({
 			name: 'ws1.code-workspace',
 			path: '/test/ws1.code-workspace',
 			mode: 'newWindow',
@@ -169,11 +183,11 @@ suite('Export/Import Test Suite', () => {
 
 		// Merge history
 		for (const entry of importData.history) {
-			historyStore.add(entry);
+			await historyStore.add(entry);
 		}
 
 		// Verify no duplicates, but count incremented
-		const all = historyStore.getAll();
+		const all = await historyStore.getAll();
 		assert.strictEqual(all.length, 1);
 		assert.strictEqual(all[0].count, 2);
 		assert.strictEqual(all[0].openedAt, '2024-01-02T00:00:00.000Z');
@@ -204,9 +218,9 @@ suite('Export/Import Test Suite', () => {
 
 	test('should write export to file and read back', async () => {
 		// Setup test data
-		metaStore.set('/test/ws1.code-workspace', { label: 'Test Project', color: 'blue' });
+		await metaStore.set('/test/ws1.code-workspace', { label: 'Test Project', color: 'blue' });
 
-		historyStore.add({
+		await historyStore.add({
 			name: 'ws1.code-workspace',
 			path: '/test/ws1.code-workspace',
 			mode: 'newWindow',
@@ -217,8 +231,8 @@ suite('Export/Import Test Suite', () => {
 		const exportData = {
 			version: '1.0',
 			exportedAt: new Date().toISOString(),
-			meta: metaStore.getAll(),
-			history: historyStore.getAll()
+			meta: await metaStore.getAll(),
+			history: await historyStore.getAll()
 		};
 
 		const filePath = path.join(testDir, 'test-export.json');

@@ -33,11 +33,11 @@ export class HistoryProvider implements vscode.TreeDataProvider<HistoryItem> {
 		return element;
 	}
 
-	getChildren(element?: HistoryItem): HistoryItem[] | Promise<HistoryItem[]> {
+	async getChildren(element?: HistoryItem): Promise<HistoryItem[]> {
 		if (element) {
 			return [];
 		}
-		let entries = this.history.getSorted();
+		let entries = await this.history.getSorted();
 
 		// Apply keyword filter
 		if (this.filterKeyword) {
@@ -49,23 +49,28 @@ export class HistoryProvider implements vscode.TreeDataProvider<HistoryItem> {
 
 		// Apply tag filter
 		if (this.tagFilter) {
-			entries = entries.filter(e => {
-				const meta = this.meta.get(e.path);
-				if (this.tagFilter!.type === 'label') {
-					return meta?.label === this.tagFilter!.value;
+			const filteredEntries: HistoryEntry[] = [];
+			for (const e of entries) {
+				const meta = await this.meta.get(e.path);
+				if (this.tagFilter.type === 'label' && meta?.label === this.tagFilter.value) {
+					filteredEntries.push(e);
+				} else if (this.tagFilter.type === 'color' && meta?.color === this.tagFilter.value) {
+					filteredEntries.push(e);
 				}
-				if (this.tagFilter!.type === 'color') {
-					return meta?.color === this.tagFilter!.value;
-				}
-				return false;
-			});
+			}
+			entries = filteredEntries;
 		}
 
-		return entries.map(e => new HistoryItem(e, this.meta.get(e.path)?.color));
+		const items: HistoryItem[] = [];
+		for (const e of entries) {
+			const meta = await this.meta.get(e.path);
+			items.push(new HistoryItem(e, meta?.color));
+		}
+		return items;
 	}
 
-	toggleSort(): SortMode {
-		const newMode = this.history.toggleSort();
+	async toggleSort(): Promise<SortMode> {
+		const newMode = await this.history.toggleSort();
 		this.refresh();
 		return newMode;
 	}

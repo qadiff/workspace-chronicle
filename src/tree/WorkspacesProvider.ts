@@ -168,7 +168,7 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 
 		const items: WorkspaceItem[] = [];
 		for (const file of this.cachedWorkspaceFiles) {
-			const meta = this.meta.get(file);
+			const meta = await this.meta.get(file);
 
 			const displayLabel = meta?.label || path.basename(file);
 
