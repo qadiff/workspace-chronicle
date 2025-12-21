@@ -36,19 +36,30 @@ export async function ensureStorageDir(): Promise<void> {
 }
 
 export async function readJson<T>(filename: string, defaultValue: T): Promise<T> {
+	const filePath = path.join(getStorageDir(), filename);
 	try {
-		const filePath = path.join(getStorageDir(), filename);
 		const content = await fs.readFile(filePath, 'utf-8');
 		return JSON.parse(content) as T;
-	} catch {
+	} catch (error) {
+		// ファイルが存在しない場合は正常なケース
+		if (error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+			return defaultValue;
+		}
+		// パースエラーや権限エラーはログを残す
+		console.error(`[workspace-chronicle] Failed to read ${filename}:`, error);
 		return defaultValue;
 	}
 }
 
 export async function writeJson<T>(filename: string, data: T): Promise<void> {
-	await ensureStorageDir();
-	const filePath = path.join(getStorageDir(), filename);
-	await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+	try {
+		await ensureStorageDir();
+		const filePath = path.join(getStorageDir(), filename);
+		await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+	} catch (error) {
+		console.error(`[workspace-chronicle] Failed to write ${filename}:`, error);
+		throw error;
+	}
 }
 
 export async function fileExists(filename: string): Promise<boolean> {

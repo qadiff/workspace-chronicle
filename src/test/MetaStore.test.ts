@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as os from 'os';
+import { randomUUID } from 'crypto';
 import { MetaStore } from '../store/MetaStore';
 import { setStorageDirOverride } from '../store/FileStore';
 
@@ -13,7 +14,7 @@ suite('MetaStore Test Suite', () => {
 
 	setup(async () => {
 		// Create unique test directory for each test
-		testDir = path.join(os.tmpdir(), `workspace-chronicle-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+		testDir = path.join(os.tmpdir(), `workspace-chronicle-test-${randomUUID()}`);
 		await fs.mkdir(testDir, { recursive: true });
 		setStorageDirOverride(testDir);
 

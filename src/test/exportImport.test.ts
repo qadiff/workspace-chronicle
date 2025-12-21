@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as os from 'os';
+import { randomUUID } from 'crypto';
 import { MetaStore } from '../store/MetaStore';
 import { HistoryStore } from '../store/HistoryStore';
 import { setStorageDirOverride } from '../store/FileStore';
@@ -16,7 +17,7 @@ suite('Export/Import Test Suite', () => {
 
 	setup(async () => {
 		// Create unique storage directory for each test
-		storageDir = path.join(os.tmpdir(), `workspace-chronicle-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+		storageDir = path.join(os.tmpdir(), `workspace-chronicle-test-${randomUUID()}`);
 		await fs.mkdir(storageDir, { recursive: true });
 		setStorageDirOverride(storageDir);
 

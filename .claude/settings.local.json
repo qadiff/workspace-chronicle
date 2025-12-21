@@ -5,7 +5,9 @@
       "Bash(pnpm lint:*)",
       "Bash(pnpm test:*)",
       "Bash(npm test:*)",
-      "Bash(npm run compile:*)"
+      "Bash(npm run compile:*)",
+      "Bash(pnpm test:unit:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

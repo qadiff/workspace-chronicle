@@ -11,21 +11,24 @@ const LEGACY_KEY = 'workspaceChronicle.meta';
 
 export class MetaStore {
 	private cache: Record<string, MetaData> | null = null;
-	private initialized = false;
+	private initPromise: Promise<void> | null = null;
 
 	constructor(private ctx: vscode.ExtensionContext) {}
 
 	// For testing: reset internal state
 	_reset(): void {
 		this.cache = null;
-		this.initialized = false;
+		this.initPromise = null;
 	}
 
 	async initialize(): Promise<void> {
-		if (this.initialized) {
-			return;
+		if (!this.initPromise) {
+			this.initPromise = this.doInitialize();
 		}
+		return this.initPromise;
+	}
 
+	private async doInitialize(): Promise<void> {
 		const exists = await fileExists(META_FILE);
 		if (!exists) {
 			// Migrate from globalState if available
@@ -36,8 +39,6 @@ export class MetaStore {
 				await this.save();
 			}
 		}
-
-		this.initialized = true;
 	}
 
 	private async load(): Promise<Record<string, MetaData>> {
