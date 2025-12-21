@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.7
+- Add Icon
+
 ## 0.0.6
 - Store history and metadata in platform-specific locations:
   - Windows: %APPDATA%\workspace-chronicle\
