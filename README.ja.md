@@ -88,6 +88,16 @@ Visual Studio Code で仕事している人向けに、以下の要望を解決�
 
 ---
 
+## データの保存場所
+
+履歴とメタデータは OS ごとに次の場所へ保存されます。
+
+- Windows: `%APPDATA%\workspace-chronicle\`
+- macOS: `~/Library/Application Support/workspace-chronicle/`
+- Linux: `~/.local/share/workspace-chronicle/`
+
+---
+
 ## コマンド
 
 | コマンド | 説明 |

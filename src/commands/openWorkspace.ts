@@ -27,7 +27,7 @@ export function registerOpenWorkspace(context: vscode.ExtensionContext, history:
 
 			try {
 				await vscode.commands.executeCommand('vscode.openFolder', uri, { forceNewWindow });
-				history.add({
+				await history.add({
 					name: path.basename(fullPath),
 					path: fullPath,
 					mode,

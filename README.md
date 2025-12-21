@@ -95,6 +95,16 @@ This tool solves the following needs for people working with Visual Studio Code:
 
 ---
 
+## Data storage location
+
+Store history and metadata in platform-specific locations:
+
+- Windows: `%APPDATA%\workspace-chronicle\`
+- macOS: `~/Library/Application Support/workspace-chronicle/`
+- Linux: `~/.local/share/workspace-chronicle/`
+
+---
+
 ## Commands
 
 | Command | Description |

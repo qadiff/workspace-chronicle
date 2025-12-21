@@ -29,7 +29,7 @@ if (!fullPath) return;
 
 const picked = await vscode.window.showQuickPick(COLORS, { placeHolder: 'Pick a color' });
 const color = picked && picked !== 'none' ? picked : undefined;
-meta.set(fullPath, { color });
+await meta.set(fullPath, { color });
 refreshers.forEach(r => r.refresh());
 })
 );

@@ -61,8 +61,8 @@ export function activate(context: vscode.ExtensionContext) {
 	registerCopyFullPath(context);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('workspaceChronicle.toggleSort', () => {
-			const newMode = historyProvider.toggleSort();
+		vscode.commands.registerCommand('workspaceChronicle.toggleSort', async () => {
+			const newMode = await historyProvider.toggleSort();
 			vscode.window.setStatusBarMessage(`History sort mode: ${newMode}`, 3000);
 		})
 	);

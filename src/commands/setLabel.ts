@@ -23,7 +23,7 @@ export function registerSetLabel(
 				return;
 			}
 			const label = await vscode.window.showInputBox({ prompt: 'Custom name (empty to clear)' });
-			meta.set(fullPath, { label: label || undefined });
+			await meta.set(fullPath, { label: label || undefined });
 			refreshers.forEach(r => r.refresh());
 		})
 	);

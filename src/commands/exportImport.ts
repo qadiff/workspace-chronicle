@@ -45,8 +45,8 @@ export function registerExportImport(
 				const exportData: ExportData = {
 					version: '1.0',
 					exportedAt: new Date().toISOString(),
-					meta: metaStore.getAll(),
-					history: historyStore.getAll()
+					meta: await metaStore.getAll(),
+					history: await historyStore.getAll()
 				};
 
 				// Determine default directory
@@ -138,12 +138,12 @@ export function registerExportImport(
 
 				// Import metadata
 				for (const [path, metadata] of Object.entries(importData.meta)) {
-					metaStore.set(path, metadata);
+					await metaStore.set(path, metadata);
 				}
 
 				// Import history
 				for (const entry of importData.history) {
-					historyStore.add(entry);
+					await historyStore.add(entry);
 				}
 
 				// Show success message
