@@ -8,7 +8,7 @@
         "type": "git",
         "url": "https://github.com/qadiff/workspace-chronicle"
     },
-    "version": "0.0.6",
+    "version": "0.0.7",
     "type": "commonjs",
     "engines": {
         "vscode": "^1.106.0"
