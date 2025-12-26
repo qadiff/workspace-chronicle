@@ -1,16 +1,2 @@
-import * as assert from 'assert';
-import { shouldScanWorkspaceFiles } from '../tree/scanGating';
-
-suite('WorkspacesProvider gating Test Suite', () => {
-	test('blocks scan in empty window when scanWhenNoFolderOpen=false', () => {
-		assert.strictEqual(
-			shouldScanWorkspaceFiles({
-				hasFolderOpen: false,
-				workspaceFileOpen: false,
-				scanWhenNoFolderOpen: false,
-				scanWhenWorkspaceFileOpen: true
-			}),
-			false
-		);
-	});
-});
+// This file intentionally left without tests.
+// The previous test suite duplicated coverage from scanGating.test.ts.
