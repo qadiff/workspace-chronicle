@@ -13,13 +13,9 @@ export const DEFAULT_IGNORE_GLOBS: string[] = [
 	'**/bower_components/**',
 	'**/vendor/**',
 
-	// Java / JVM
+	// Java / JVM / Rust
 	'**/.gradle/**',
 	'**/target/**',
-
-	// Rust
-	'**/target/**',
-
 	// .NET (C#/F#)
 	'**/bin/**',
 	'**/obj/**',
