@@ -141,4 +141,26 @@ export class HistoryStore {
 		await this.setSortMode(nextMode);
 		return nextMode;
 	}
+
+	async remove(pathToRemove: string): Promise<boolean> {
+		await this.initialize();
+		const data = await this.load();
+		const before = data.entries.length;
+		data.entries = data.entries.filter((e) => e.path !== pathToRemove);
+		const removed = data.entries.length !== before;
+		if (removed) {
+			await this.save();
+		}
+		return removed;
+	}
+
+	async clear(): Promise<void> {
+		await this.initialize();
+		const data = await this.load();
+		if (data.entries.length === 0) {
+			return;
+		}
+		data.entries = [];
+		await this.save();
+	}
 }

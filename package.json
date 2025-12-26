@@ -8,7 +8,7 @@
         "type": "git",
         "url": "https://github.com/qadiff/workspace-chronicle"
     },
-    "version": "0.0.7",
+    "version": "0.0.8",
     "type": "commonjs",
     "engines": {
         "vscode": "^1.106.0"
@@ -21,6 +21,7 @@
         "onView:workspaceChronicle.workspaces",
         "onView:workspaceChronicle.history",
         "onCommand:workspaceChronicle.refresh",
+        "onCommand:workspaceChronicle.clearScanCacheAndRescan",
         "onCommand:workspaceChronicle.open",
         "onCommand:workspaceChronicle.setOpenMode",
         "onCommand:workspaceChronicle.setLabel",
@@ -28,6 +29,8 @@
         "onCommand:workspaceChronicle.filterHistory",
         "onCommand:workspaceChronicle.filterHistoryView",
         "onCommand:workspaceChronicle.toggleSort",
+        "onCommand:workspaceChronicle.removeFromHistory",
+        "onCommand:workspaceChronicle.clearHistory",
         "onCommand:workspaceChronicle.copyFullPath",
         "onCommand:workspaceChronicle.filterByTag",
         "onCommand:workspaceChronicle.filterByTagView",
@@ -53,6 +56,10 @@
                 "title": "Workspace Chronicle: Refresh"
             },
             {
+                "command": "workspaceChronicle.clearScanCacheAndRescan",
+                "title": "Workspace Chronicle: Rescan"
+            },
+            {
                 "command": "workspaceChronicle.setOpenMode",
                 "title": "Workspace Chronicle: Set Default Open Mode"
             },
@@ -75,6 +82,14 @@
             {
                 "command": "workspaceChronicle.toggleSort",
                 "title": "Workspace Chronicle: Toggle Sort Mode"
+            },
+            {
+                "command": "workspaceChronicle.removeFromHistory",
+                "title": "Workspace Chronicle: Remove From History"
+            },
+            {
+                "command": "workspaceChronicle.clearHistory",
+                "title": "Workspace Chronicle: Clear History"
             },
             {
                 "command": "workspaceChronicle.copyFullPath",
@@ -281,6 +296,13 @@
                 {
                     "command": "workspaceChronicle.clearHistoryFiltersView",
                     "when": "false"
+                },
+                {
+                    "command": "workspaceChronicle.removeFromHistory",
+                    "when": "false"
+                },
+                {
+                    "command": "workspaceChronicle.clearHistory"
                 }
             ],
             "view/item/context": [
@@ -298,6 +320,11 @@
                     "command": "workspaceChronicle.copyFullPath",
                     "when": "view == workspaceChronicle.workspaces && viewItem == workspaceItem",
                     "group": "navigation"
+                },
+                {
+                    "command": "workspaceChronicle.removeFromHistory",
+                    "when": "view == workspaceChronicle.history && viewItem == historyItem",
+                    "group": "edit@1"
                 }
             ]
         }

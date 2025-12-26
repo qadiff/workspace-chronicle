@@ -2,7 +2,7 @@
 
 多数の `.code-workspace` を収集して一覧表示し、**新規ウィンドウ（既定）**または**既存ウィンドウ**で開けます。開いた履歴を記録・表示します。
 
-[English](README.en.md)
+[English](README.md)
 
 <!-- GitHub CI / Release -->
 [![GitHub release](https://img.shields.io/github/v/release/qadiff/workspace-chronicle?include_prereleases)](https://github.com/qadiff/workspace-chronicle/releases)
@@ -99,14 +99,21 @@ Visual Studio Code で仕事している人向けに、以下の要望を解決�
 - 探索対象は `workspaceChronicle.roots` 配下です（今開いているプロジェクトフォルダ配下を自動探索する仕様ではありません）。ビューを開いて拡張が有効化されていれば、空ウィンドウでも探索します。
 - 空ウィンドウでは探索したくない場合は `workspaceChronicle.scanWhenNoFolderOpen` を `false` にしてください。
 - Windows では `AppData` 配下は既定で探索対象外です（サイズが大きくノイズになりやすいため）。
+- ユーザーホームそのものを探索する場合（例: `${userHome}`）、ホーム直下の `.vscode` と `.kiro` は既定で探索対象外です。
 - `workspaceChronicle.roots` が広すぎる（例: `${userHome}`）場合、探索に時間がかかることがあります。roots を絞るか、除外設定を追加してください。
 - `.gitignore` 対応は roots 配下で見つかった `.gitignore` を読み取って適用します。現時点では global gitignore や `.git/info/exclude` は対象外です。
+
+### 探索結果のキャッシュ
+
+- 探索で見つかったワークスペース一覧はディスクにキャッシュされ、次回以降の起動で「毎回0から探索」を避けます。
+- キャッシュキーには OS と探索関連設定（roots / ignore / `.gitignore` / 枝刈り）が含まれます。
+- キャッシュ削除＋強制再探索は `Workspace Chronicle: Rescan` を実行してください。
 
 ---
 
 ## データの保存場所
 
-履歴とメタデータは OS ごとに次の場所へ保存されます。
+履歴・メタデータ・探索キャッシュは OS ごとに次の場所へ保存されます。
 
 - Windows: `%APPDATA%\workspace-chronicle\`
 - macOS: `~/Library/Application Support/workspace-chronicle/`
@@ -119,6 +126,7 @@ Visual Studio Code で仕事している人向けに、以下の要望を解決�
 | コマンド | 説明 |
 |----------|------|
 | `Workspace Chronicle: Refresh` | ワークスペース一覧を更新 |
+| `Workspace Chronicle: Rescan` | 探索キャッシュを削除して再探索 |
 | `Workspace Chronicle: Set Default Open Mode` | 既定の開き方を設定 |
 | `Workspace Chronicle: Set Custom Name` | カスタム名（ラベル）を設定 |
 | `Workspace Chronicle: Set Color` | 色タグを設定 |
@@ -126,6 +134,8 @@ Visual Studio Code で仕事している人向けに、以下の要望を解決�
 | `Workspace Chronicle: Filter History` | 履歴をキーワードでフィルター |
 | `Workspace Chronicle: Filter History by Label or Color` | 履歴をラベル/色でフィルター |
 | `Workspace Chronicle: Toggle Sort Mode` | 履歴のソートモードを切り替え |
+| `Workspace Chronicle: Remove From History` | 履歴から1件削除（History項目の右クリックから） |
+| `Workspace Chronicle: Clear History` | 履歴を全削除 |
 | `Workspace Chronicle: Clear All Filters` | すべてのフィルターをクリア |
 | `Workspace Chronicle: Open Recent` | 最近開いたワークスペースをクイックオープン |
 | `Workspace Chronicle: Search Workspaces` | ワークスペースを検索して開く |

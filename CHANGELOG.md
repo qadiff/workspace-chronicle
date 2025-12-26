@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.0.8
+- Improve workspace discovery performance and control:
+  - Respect `.gitignore` while scanning (configurable)
+  - Add built-in ignore patterns + user-defined ignore globs
+  - Optional branch pruning: stop descending when a `.code-workspace` is found
+  - Configurable scan gating for empty windows / when a workspace file is open
+- Add persistent scan cache to avoid rescanning from scratch across sessions
+- Add `Workspace Chronicle: Rescan` to clear scan cache and force a fresh scan
+- Add history management:
+  - Remove a single entry from history
+  - Clear all history
+- Windows: exclude `AppData` by default to reduce noise
+- When scanning the user home directory itself, exclude home-level `.vscode` and `.kiro` by default
+
+## 0.0.7
+- Add Icon
+
 ## 0.0.6
 - Store history and metadata in platform-specific locations:
   - Windows: %APPDATA%\workspace-chronicle\

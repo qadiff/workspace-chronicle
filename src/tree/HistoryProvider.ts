@@ -74,9 +74,22 @@ export class HistoryProvider implements vscode.TreeDataProvider<HistoryItem> {
 		this.refresh();
 		return newMode;
 	}
+
+	async removeFromHistory(pathToRemove: string): Promise<boolean> {
+		const removed = await this.history.remove(pathToRemove);
+		if (removed) {
+			this.refresh();
+		}
+		return removed;
+	}
+
+	async clearHistory(): Promise<void> {
+		await this.history.clear();
+		this.refresh();
+	}
 }
 
-class HistoryItem extends vscode.TreeItem {
+export class HistoryItem extends vscode.TreeItem {
 	constructor(public readonly entry: HistoryEntry, color?: string) {
 		const baseLabel = `${fmtDate(entry.openedAt)} – ${entry.name}`;
 		const withCount = entry.count ? `${baseLabel} (${entry.count}x)` : baseLabel;
