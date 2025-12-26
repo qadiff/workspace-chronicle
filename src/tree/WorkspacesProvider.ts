@@ -78,7 +78,7 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 		}
 	): Promise<void> {
 		const config = vscode.workspace.getConfiguration('workspaceChronicle');
-		const scanWhenWorkspaceFileOpen = config.get<boolean>('scanWhenWorkspaceFileOpen') ?? false;
+		const scanWhenWorkspaceFileOpen = config.get<boolean>('scanWhenWorkspaceFileOpen') ?? true;
 		const scanWhenNoFolderOpen = config.get<boolean>('scanWhenNoFolderOpen') ?? true;
 		const scanUpdateIntervalMs =
 			config.get<number>('scanUpdateIntervalMs') ?? DEFAULT_SCAN_UPDATE_INTERVAL_MS;
