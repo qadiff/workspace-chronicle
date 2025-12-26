@@ -8,7 +8,7 @@
         "type": "git",
         "url": "https://github.com/qadiff/workspace-chronicle"
     },
-    "version": "0.0.7",
+    "version": "0.0.8",
     "type": "commonjs",
     "engines": {
         "vscode": "^1.106.0"
@@ -21,6 +21,7 @@
         "onView:workspaceChronicle.workspaces",
         "onView:workspaceChronicle.history",
         "onCommand:workspaceChronicle.refresh",
+        "onCommand:workspaceChronicle.clearScanCacheAndRescan",
         "onCommand:workspaceChronicle.open",
         "onCommand:workspaceChronicle.setOpenMode",
         "onCommand:workspaceChronicle.setLabel",
@@ -28,6 +29,8 @@
         "onCommand:workspaceChronicle.filterHistory",
         "onCommand:workspaceChronicle.filterHistoryView",
         "onCommand:workspaceChronicle.toggleSort",
+        "onCommand:workspaceChronicle.removeFromHistory",
+        "onCommand:workspaceChronicle.clearHistory",
         "onCommand:workspaceChronicle.copyFullPath",
         "onCommand:workspaceChronicle.filterByTag",
         "onCommand:workspaceChronicle.filterByTagView",
@@ -53,6 +56,10 @@
                 "title": "Workspace Chronicle: Refresh"
             },
             {
+                "command": "workspaceChronicle.clearScanCacheAndRescan",
+                "title": "Workspace Chronicle: Rescan"
+            },
+            {
                 "command": "workspaceChronicle.setOpenMode",
                 "title": "Workspace Chronicle: Set Default Open Mode"
             },
@@ -75,6 +82,14 @@
             {
                 "command": "workspaceChronicle.toggleSort",
                 "title": "Workspace Chronicle: Toggle Sort Mode"
+            },
+            {
+                "command": "workspaceChronicle.removeFromHistory",
+                "title": "Workspace Chronicle: Remove From History"
+            },
+            {
+                "command": "workspaceChronicle.clearHistory",
+                "title": "Workspace Chronicle: Clear History"
             },
             {
                 "command": "workspaceChronicle.copyFullPath",
@@ -172,6 +187,45 @@
                     "default": 30000,
                     "minimum": 1000,
                     "description": "ワークスペーススキャンのタイムアウト時間（ミリ秒）。この時間を超えるとスキャンを中断し、それまでに見つかった結果を表示します。"
+                },
+                "workspaceChronicle.scanWhenWorkspaceFileOpen": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": ".code-workspace（マルチルート）を開いている状態でも、roots 配下の .code-workspace 探索を実行します。"
+                },
+                "workspaceChronicle.scanWhenNoFolderOpen": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "フォルダ未オープン（空ウィンドウ）の状態でも、roots 配下の .code-workspace 探索を実行します。"
+                },
+                "workspaceChronicle.scanUseDefaultIgnore": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "探索時に、組み込みの除外パターン（node_modules / ビルド成果物など）を使用します。"
+                },
+                "workspaceChronicle.scanIgnore": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [],
+                    "description": "探索から除外する追加の glob パターン（例: **/go/pkg/**, **/pkg/mod/**）"
+                },
+                "workspaceChronicle.scanRespectGitignore": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "探索時に .gitignore を読み取り、ignore されているパスは探索しません。"
+                },
+                "workspaceChronicle.scanStopAtWorkspaceFile": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "同一ディレクトリ内で .code-workspace が見つかった場合、その配下には探索しません（枝刈り）。"
+                },
+                "workspaceChronicle.scanUpdateIntervalMs": {
+                    "type": "number",
+                    "default": 500,
+                    "minimum": 0,
+                    "description": "探索中に Workspaces ツリーを更新する間隔（ミリ秒）。0 で毎回更新します。"
                 }
             }
         },
@@ -242,6 +296,13 @@
                 {
                     "command": "workspaceChronicle.clearHistoryFiltersView",
                     "when": "false"
+                },
+                {
+                    "command": "workspaceChronicle.removeFromHistory",
+                    "when": "false"
+                },
+                {
+                    "command": "workspaceChronicle.clearHistory"
                 }
             ],
             "view/item/context": [
@@ -259,6 +320,11 @@
                     "command": "workspaceChronicle.copyFullPath",
                     "when": "view == workspaceChronicle.workspaces && viewItem == workspaceItem",
                     "group": "navigation"
+                },
+                {
+                    "command": "workspaceChronicle.removeFromHistory",
+                    "when": "view == workspaceChronicle.history && viewItem == historyItem",
+                    "group": "edit@1"
                 }
             ]
         }
@@ -282,12 +348,14 @@
         ]
     },
     "dependencies": {
-        "globby": "^16.0.0"
+        "ignore": "^7.0.5",
+        "picomatch": "^4.0.2"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.1",
         "@types/mocha": "^10.0.10",
         "@types/node": "^24.10.2",
+        "@types/picomatch": "^4.0.2",
         "@types/vscode": "^1.106.1",
         "@vscode/test-electron": "^2.5.2",
         "@vscode/vsce": "^3.7.1",

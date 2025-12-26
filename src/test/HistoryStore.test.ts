@@ -260,6 +260,54 @@ suite('HistoryStore Test Suite', () => {
 		assert.strictEqual(sorted[0].openedAt, '2024-01-04T00:00:00.000Z');
 	});
 
+	test('should remove a single entry by path', async () => {
+		await historyStore.add({
+			name: 'ws1',
+			path: '/test/ws1.code-workspace',
+			mode: 'newWindow',
+			openedAt: '2024-01-01T00:00:00.000Z'
+		});
+		await historyStore.add({
+			name: 'ws2',
+			path: '/test/ws2.code-workspace',
+			mode: 'newWindow',
+			openedAt: '2024-01-02T00:00:00.000Z'
+		});
+
+		assert.strictEqual(await historyStore.remove('/test/ws1.code-workspace'), true);
+		const all = await historyStore.getAll();
+		assert.strictEqual(all.length, 1);
+		assert.strictEqual(all[0].path, '/test/ws2.code-workspace');
+	});
+
+	test('remove returns false when path not found', async () => {
+		await historyStore.add({
+			name: 'ws1',
+			path: '/test/ws1.code-workspace',
+			mode: 'newWindow',
+			openedAt: '2024-01-01T00:00:00.000Z'
+		});
+		assert.strictEqual(await historyStore.remove('/test/missing.code-workspace'), false);
+	});
+
+	test('clear removes all entries', async () => {
+		await historyStore.add({
+			name: 'ws1',
+			path: '/test/ws1.code-workspace',
+			mode: 'newWindow',
+			openedAt: '2024-01-01T00:00:00.000Z'
+		});
+		await historyStore.add({
+			name: 'ws2',
+			path: '/test/ws2.code-workspace',
+			mode: 'newWindow',
+			openedAt: '2024-01-02T00:00:00.000Z'
+		});
+		assert.strictEqual((await historyStore.getAll()).length, 2);
+		await historyStore.clear();
+		assert.strictEqual((await historyStore.getAll()).length, 0);
+	});
+
 	test('should get and set sort mode', async () => {
 		assert.strictEqual(await historyStore.getSortMode(), 'recent');
 

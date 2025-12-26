@@ -2,7 +2,7 @@
 
 Collects and lists multiple `.code-workspace` files, allowing you to open them in a **new window (default)** or **existing window**. Records and displays your open history.
 
-[日本語](README.md)
+[日本語](README.ja.md)
 
 <!-- GitHub CI / Release -->
 [![GitHub release](https://img.shields.io/github/v/release/qadiff/workspace-chronicle?include_prereleases)](https://github.com/qadiff/workspace-chronicle/releases)
@@ -92,12 +92,35 @@ This tool solves the following needs for people working with Visual Studio Code:
 | `workspaceChronicle.roots` | Root directories to search | `["${userHome}"]` |
 | `workspaceChronicle.defaultOpenMode` | Default open mode (`newWindow` / `reuseWindow`) | `newWindow` |
 | `workspaceChronicle.historyLimit` | Maximum number of history entries | `500` |
+| `workspaceChronicle.scanTimeoutMs` | Scan timeout in milliseconds (shows partial results on timeout) | `30000` |
+| `workspaceChronicle.scanWhenWorkspaceFileOpen` | Also scan when a multi-root `.code-workspace` is open | `true` |
+| `workspaceChronicle.scanWhenNoFolderOpen` | Also scan when no folder is open (empty window) | `true` |
+| `workspaceChronicle.scanUseDefaultIgnore` | Use built-in ignore patterns (node_modules, build outputs, caches, etc.) | `true` |
+| `workspaceChronicle.scanIgnore` | Additional ignore globs (e.g. `**/go/pkg/**`, `**/pkg/mod/**`) | `[]` |
+| `workspaceChronicle.scanRespectGitignore` | Respect `.gitignore` while scanning | `true` |
+| `workspaceChronicle.scanStopAtWorkspaceFile` | If a directory has a `.code-workspace`, do not scan deeper | `true` |
+| `workspaceChronicle.scanUpdateIntervalMs` | Throttle interval (ms) for updating the tree during scanning | `500` |
+
+### Notes
+
+- Scanning is based on `workspaceChronicle.roots` (not the currently opened project folder). It runs even in an empty window, as long as the extension is activated (e.g. the view is opened).
+- If you don't want scanning in an empty window, set `workspaceChronicle.scanWhenNoFolderOpen` to `false`.
+- On Windows, `AppData` is excluded from scanning by default to avoid huge and noisy results.
+- When scanning the user home directory itself (e.g. `${userHome}`), the home-level `.vscode` and `.kiro` directories are excluded by default.
+- If `workspaceChronicle.roots` is very broad (e.g. `${userHome}`), scanning can take a long time. Prefer narrower roots and/or add ignores.
+- `.gitignore` support reads `.gitignore` files found under your roots. It does not currently include global gitignore or `.git/info/exclude`.
+
+### Scan cache
+
+- The discovered workspace list is cached on disk and reused across sessions to avoid rescanning from scratch.
+- Cache keys include your platform and scan-related settings (roots/ignores/.gitignore/branch pruning).
+- To clear the cache and force a fresh scan, run `Workspace Chronicle: Rescan`.
 
 ---
 
 ## Data storage location
 
-Store history and metadata in platform-specific locations:
+Stores history, metadata, and scan cache in platform-specific locations:
 
 - Windows: `%APPDATA%\workspace-chronicle\`
 - macOS: `~/Library/Application Support/workspace-chronicle/`
@@ -110,6 +133,7 @@ Store history and metadata in platform-specific locations:
 | Command | Description |
 |---------|-------------|
 | `Workspace Chronicle: Refresh` | Refresh the workspace list |
+| `Workspace Chronicle: Rescan` | Clear scan cache and rescan workspaces |
 | `Workspace Chronicle: Set Default Open Mode` | Set the default open mode |
 | `Workspace Chronicle: Set Custom Name` | Set a custom name (label) |
 | `Workspace Chronicle: Set Color` | Set a color tag |
@@ -117,6 +141,8 @@ Store history and metadata in platform-specific locations:
 | `Workspace Chronicle: Filter History` | Filter history by keyword |
 | `Workspace Chronicle: Filter History by Label or Color` | Filter history by label/color |
 | `Workspace Chronicle: Toggle Sort Mode` | Toggle history sort mode |
+| `Workspace Chronicle: Remove From History` | Remove a single entry from history (from item context menu) |
+| `Workspace Chronicle: Clear History` | Clear all history entries |
 | `Workspace Chronicle: Clear All Filters` | Clear all filters |
 | `Workspace Chronicle: Open Recent` | Quick open recently opened workspaces |
 | `Workspace Chronicle: Search Workspaces` | Search and open workspaces |
