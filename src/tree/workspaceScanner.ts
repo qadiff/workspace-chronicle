@@ -204,9 +204,6 @@ export async function scanForWorkspaceFiles(
 			if (!ent.isDirectory()) {
 				continue;
 			}
-			if (ent.isSymbolicLink()) {
-				continue;
-			}
 
 			const child = path.join(dir, ent.name);
 			if (opts.isGlobIgnored(child + path.sep)) {
