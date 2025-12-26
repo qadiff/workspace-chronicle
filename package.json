@@ -175,8 +175,13 @@
                 },
                 "workspaceChronicle.scanWhenWorkspaceFileOpen": {
                     "type": "boolean",
-                    "default": false,
+                    "default": true,
                     "description": ".code-workspace（マルチルート）を開いている状態でも、roots 配下の .code-workspace 探索を実行します。"
+                },
+                "workspaceChronicle.scanWhenNoFolderOpen": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "フォルダ未オープン（空ウィンドウ）の状態でも、roots 配下の .code-workspace 探索を実行します。"
                 },
                 "workspaceChronicle.scanUseDefaultIgnore": {
                     "type": "boolean",

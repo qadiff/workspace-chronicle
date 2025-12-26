@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as os from 'os';
 import * as path from 'path';
 import { type Ignore } from 'ignore';
 import { MetaStore } from '../store/MetaStore';
@@ -8,6 +9,7 @@ import {
 	createGlobIgnoreMatcher,
 	scanForWorkspaceFiles
 } from './workspaceScanner';
+import { shouldScanWorkspaceFiles } from './scanGating';
 
 // Default scan timeout in milliseconds (30 seconds)
 const DEFAULT_SCAN_TIMEOUT_MS = 30000;
@@ -56,16 +58,20 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 	private async refreshWorkspaceFiles(generation: number): Promise<void> {
 		const config = vscode.workspace.getConfiguration('workspaceChronicle');
 		const scanWhenWorkspaceFileOpen = config.get<boolean>('scanWhenWorkspaceFileOpen') ?? false;
+		const scanWhenNoFolderOpen = config.get<boolean>('scanWhenNoFolderOpen') ?? true;
 		const scanUpdateIntervalMs =
 			config.get<number>('scanUpdateIntervalMs') ?? DEFAULT_SCAN_UPDATE_INTERVAL_MS;
 
-		// Only scan when a folder is open, and (by default) no multi-root workspace file is active
-		const workspaceFolders = vscode.workspace.workspaceFolders;
+		// Scan based on configured roots. By default, also scan when a multi-root workspace file is open.
 		const workspaceFile = vscode.workspace.workspaceFile;
-		const shouldSearch =
-			Array.isArray(workspaceFolders) &&
-			workspaceFolders.length > 0 &&
-			(!workspaceFile || scanWhenWorkspaceFileOpen);
+		const workspaceFolders = vscode.workspace.workspaceFolders;
+		const hasFolderOpen = Array.isArray(workspaceFolders) && workspaceFolders.length > 0;
+		const shouldSearch = shouldScanWorkspaceFiles({
+			hasFolderOpen,
+			workspaceFileOpen: Boolean(workspaceFile),
+			scanWhenNoFolderOpen,
+			scanWhenWorkspaceFileOpen
+		});
 		if (!shouldSearch) {
 			this.applyUpdate([], generation);
 			return;
@@ -81,6 +87,10 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 		this.refreshPromise = (async () => {
 			try {
 				const roots = config.get<string[]>('roots') || [];
+				if (roots.length === 0) {
+					this.applyUpdate([], generation);
+					return;
+				}
 				const timeoutMs = config.get<number>('scanTimeoutMs') ?? DEFAULT_SCAN_TIMEOUT_MS;
 				const scanUseDefaultIgnore = config.get<boolean>('scanUseDefaultIgnore') ?? true;
 				const scanIgnore = config.get<string[]>('scanIgnore') ?? [];
@@ -95,6 +105,10 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 					...(scanUseDefaultIgnore ? DEFAULT_IGNORE_GLOBS : []),
 					...scanIgnore
 				];
+				if (process.platform === 'win32') {
+					ignoreGlobs.push('**/AppData/**');
+					ignoreGlobs.push('**/Application Data/**');
+				}
 				const isGlobIgnored = createGlobIgnoreMatcher(ignoreGlobs);
 
 				const deadline = Date.now() + timeoutMs;
@@ -262,7 +276,10 @@ function encodeColor(color: string): string {
 }
 
 function expandPath(p: string) {
-	const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+	const homeDrive = process.env.HOMEDRIVE;
+	const homePath = process.env.HOMEPATH;
+	const envHome = process.env.HOME || process.env.USERPROFILE;
+	const homeDir = os.homedir() || envHome || (homeDrive && homePath ? path.join(homeDrive, homePath) : '');
 	if (p.startsWith('~')) {
 		return path.join(homeDir, p.slice(1));
 	}

@@ -93,7 +93,8 @@ This tool solves the following needs for people working with Visual Studio Code:
 | `workspaceChronicle.defaultOpenMode` | Default open mode (`newWindow` / `reuseWindow`) | `newWindow` |
 | `workspaceChronicle.historyLimit` | Maximum number of history entries | `500` |
 | `workspaceChronicle.scanTimeoutMs` | Scan timeout in milliseconds (shows partial results on timeout) | `30000` |
-| `workspaceChronicle.scanWhenWorkspaceFileOpen` | Also scan when a multi-root `.code-workspace` is open | `false` |
+| `workspaceChronicle.scanWhenWorkspaceFileOpen` | Also scan when a multi-root `.code-workspace` is open | `true` |
+| `workspaceChronicle.scanWhenNoFolderOpen` | Also scan when no folder is open (empty window) | `true` |
 | `workspaceChronicle.scanUseDefaultIgnore` | Use built-in ignore patterns (node_modules, build outputs, caches, etc.) | `true` |
 | `workspaceChronicle.scanIgnore` | Additional ignore globs (e.g. `**/go/pkg/**`, `**/pkg/mod/**`) | `[]` |
 | `workspaceChronicle.scanRespectGitignore` | Respect `.gitignore` while scanning | `true` |
@@ -102,6 +103,9 @@ This tool solves the following needs for people working with Visual Studio Code:
 
 ### Notes
 
+- Scanning is based on `workspaceChronicle.roots` (not the currently opened project folder). It runs even in an empty window, as long as the extension is activated (e.g. the view is opened).
+- If you don't want scanning in an empty window, set `workspaceChronicle.scanWhenNoFolderOpen` to `false`.
+- On Windows, `AppData` is excluded from scanning by default to avoid huge and noisy results.
 - If `workspaceChronicle.roots` is very broad (e.g. `${userHome}`), scanning can take a long time. Prefer narrower roots and/or add ignores.
 - `.gitignore` support reads `.gitignore` files found under your roots. It does not currently include global gitignore or `.git/info/exclude`.
 

@@ -86,7 +86,8 @@ Visual Studio Code で仕事している人向けに、以下の要望を解決�
 | `workspaceChronicle.defaultOpenMode` | 既定の開き方 (`newWindow` / `reuseWindow`) | `newWindow` |
 | `workspaceChronicle.historyLimit` | 保存する履歴の最大件数 | `500` |
 | `workspaceChronicle.scanTimeoutMs` | スキャンのタイムアウト（ミリ秒）。時間内に見つかった結果を表示します | `30000` |
-| `workspaceChronicle.scanWhenWorkspaceFileOpen` | `.code-workspace`（マルチルート）を開いている状態でも探索します | `false` |
+| `workspaceChronicle.scanWhenWorkspaceFileOpen` | `.code-workspace`（マルチルート）を開いている状態でも探索します | `true` |
+| `workspaceChronicle.scanWhenNoFolderOpen` | フォルダ未オープン（空ウィンドウ）の状態でも探索します | `true` |
 | `workspaceChronicle.scanUseDefaultIgnore` | 組み込みの除外パターン（node_modules / ビルド成果物など）を使用 | `true` |
 | `workspaceChronicle.scanIgnore` | 追加の除外 glob（例: `**/go/pkg/**`, `**/pkg/mod/**`） | `[]` |
 | `workspaceChronicle.scanRespectGitignore` | `.gitignore` を読み取り、ignore されているパスは探索しない | `true` |
@@ -95,6 +96,9 @@ Visual Studio Code で仕事している人向けに、以下の要望を解決�
 
 ### 注意
 
+- 探索対象は `workspaceChronicle.roots` 配下です（今開いているプロジェクトフォルダ配下を自動探索する仕様ではありません）。ビューを開いて拡張が有効化されていれば、空ウィンドウでも探索します。
+- 空ウィンドウでは探索したくない場合は `workspaceChronicle.scanWhenNoFolderOpen` を `false` にしてください。
+- Windows では `AppData` 配下は既定で探索対象外です（サイズが大きくノイズになりやすいため）。
 - `workspaceChronicle.roots` が広すぎる（例: `${userHome}`）場合、探索に時間がかかることがあります。roots を絞るか、除外設定を追加してください。
 - `.gitignore` 対応は roots 配下で見つかった `.gitignore` を読み取って適用します。現時点では global gitignore や `.git/info/exclude` は対象外です。
 
