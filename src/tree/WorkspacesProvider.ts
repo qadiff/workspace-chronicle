@@ -1,11 +1,73 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { globby } from 'globby';
+import * as fs from 'fs/promises';
+import ignore, { type Ignore } from 'ignore';
+import picomatch from 'picomatch';
 import { MetaStore } from '../store/MetaStore';
 import { HistoryStore } from '../store/HistoryStore';
 
 // Default scan timeout in milliseconds (30 seconds)
 const DEFAULT_SCAN_TIMEOUT_MS = 30000;
+
+// Default interval (ms) for updating the tree during scanning
+const DEFAULT_SCAN_UPDATE_INTERVAL_MS = 500;
+
+// Built-in ignore globs. Keep this conservative and broadly applicable.
+// Users can extend via settings.
+const DEFAULT_IGNORE_GLOBS: string[] = [
+	'**/.git/**',
+	'**/.hg/**',
+	'**/.svn/**',
+	'**/node_modules/**',
+	'**/bower_components/**',
+	'**/vendor/**',
+
+	// Java / JVM
+	'**/.gradle/**',
+	'**/target/**',
+
+	// Rust
+	'**/target/**',
+
+	// .NET (C#/F#)
+	'**/bin/**',
+	'**/obj/**',
+
+	// Python
+	'**/__pycache__/**',
+	'**/.venv/**',
+	'**/venv/**',
+	'**/.tox/**',
+	'**/.mypy_cache/**',
+	'**/.pytest_cache/**',
+	'**/.ruff_cache/**',
+
+	// Node/JS tooling
+	'**/.next/**',
+	'**/.nuxt/**',
+	'**/.turbo/**',
+	'**/.yarn/**',
+	'**/.pnpm-store/**',
+
+	// Ruby
+	'**/.bundle/**',
+	'**/vendor/bundle/**',
+
+	// Common build outputs
+	'**/dist/**',
+	'**/build/**',
+	'**/out/**',
+	'**/coverage/**',
+
+	// Editor/cache dirs
+	'**/.idea/**',
+	'**/.cache/**'
+];
+
+type GitIgnoreCtx = {
+	baseDir: string;
+	ig: Ignore;
+};
 
 export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem> {
 	private _onDidChangeTreeData = new vscode.EventEmitter<void>();
@@ -46,10 +108,18 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 	}
 
 	private async refreshWorkspaceFiles(generation: number): Promise<void> {
-		// Only scan when a folder is open and no multi-root workspace file is active
+		const config = vscode.workspace.getConfiguration('workspaceChronicle');
+		const scanWhenWorkspaceFileOpen = config.get<boolean>('scanWhenWorkspaceFileOpen') ?? false;
+		const scanUpdateIntervalMs =
+			config.get<number>('scanUpdateIntervalMs') ?? DEFAULT_SCAN_UPDATE_INTERVAL_MS;
+
+		// Only scan when a folder is open, and (by default) no multi-root workspace file is active
 		const workspaceFolders = vscode.workspace.workspaceFolders;
 		const workspaceFile = vscode.workspace.workspaceFile;
-		const shouldSearch = Array.isArray(workspaceFolders) && workspaceFolders.length > 0 && !workspaceFile;
+		const shouldSearch =
+			Array.isArray(workspaceFolders) &&
+			workspaceFolders.length > 0 &&
+			(!workspaceFile || scanWhenWorkspaceFileOpen);
 		if (!shouldSearch) {
 			this.applyUpdate([], generation);
 			return;
@@ -64,52 +134,66 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 		this.scanAborted = false;
 		this.refreshPromise = (async () => {
 			try {
-				const config = vscode.workspace.getConfiguration('workspaceChronicle');
 				const roots = config.get<string[]>('roots') || [];
 				const timeoutMs = config.get<number>('scanTimeoutMs') ?? DEFAULT_SCAN_TIMEOUT_MS;
+				const scanUseDefaultIgnore = config.get<boolean>('scanUseDefaultIgnore') ?? true;
+				const scanIgnore = config.get<string[]>('scanIgnore') ?? [];
+				const scanRespectGitignore = config.get<boolean>('scanRespectGitignore') ?? true;
+				const scanStopAtWorkspaceFile = config.get<boolean>('scanStopAtWorkspaceFile') ?? true;
 
 				const expandedRoots = roots.map(expandPath).filter(Boolean);
 				const uniqueRoots = Array.from(new Set(expandedRoots));
 				const allFiles = new Set<string>();
 
-				const scanPromise = Promise.all(
-					uniqueRoots.map(async (root) => {
-						if (this.scanAborted) {
-							return;
-						}
-						const pattern = path.join(root, '**/*.code-workspace');
-
-						const files = await globby(pattern, {
-							ignore: ['**/node_modules/**', '**/.git/**', '**/bower_components/**', '**/vendor/**'],
-							absolute: true,
-							followSymbolicLinks: false,
-							onlyFiles: true,
-							suppressErrors: true
-						});
-
-						if (this.scanAborted) {
-							return;
-						}
-
-						for (const file of files) {
-							allFiles.add(file);
-						}
-						this.applyUpdate(Array.from(allFiles), generation);
-					})
-				);
-
-				// Race between scan and timeout
-				const timeoutPromise = new Promise<'timeout'>((resolve) => {
-					setTimeout(() => resolve('timeout'), timeoutMs);
+				const ignoreGlobs = [
+					...(scanUseDefaultIgnore ? DEFAULT_IGNORE_GLOBS : []),
+					...scanIgnore
+				];
+				const isGlobIgnored = picomatch(ignoreGlobs, {
+					dot: true,
+					nocase: true
 				});
 
-				const result = await Promise.race([
-					scanPromise.then(() => 'done' as const),
-					timeoutPromise
-				]);
+				const deadline = Date.now() + timeoutMs;
+				let lastUpdateAt = 0;
+				const maybeUpdate = () => {
+					const now = Date.now();
+					if (scanUpdateIntervalMs <= 0 || now - lastUpdateAt >= scanUpdateIntervalMs) {
+						lastUpdateAt = now;
+						this.applyUpdate(Array.from(allFiles), generation);
+					}
+				};
 
-				if (result === 'timeout') {
+				const gitignoreCache = new Map<string, Ignore | null>();
+
+				for (const root of uniqueRoots) {
+					if (this.scanAborted) {
+						break;
+					}
+					if (Date.now() > deadline) {
+						this.scanAborted = true;
+						break;
+					}
+
+					await scanForWorkspaceFiles(root, {
+						deadline,
+						respectGitignore: scanRespectGitignore,
+						stopAtWorkspaceFile: scanStopAtWorkspaceFile,
+						gitignoreCache,
+						isGlobIgnored: (fullPath: string) => isGlobIgnored(toPosix(fullPath)),
+						onFound: (file) => {
+							allFiles.add(file);
+							maybeUpdate();
+						},
+						isAborted: () => this.scanAborted
+					});
+				}
+
+				if (Date.now() > deadline) {
 					this.scanAborted = true;
+				}
+
+				if (this.scanAborted) {
 					console.log(
 						`[WorkspacesProvider] Scan timed out after ${timeoutMs}ms. Found ${allFiles.size} workspace files (partial).`
 					);
@@ -243,4 +327,157 @@ function expandPath(p: string) {
 		return p.replace(/\$\{userHome\}/g, homeDir);
 	}
 	return p;
+}
+
+function toPosix(p: string): string {
+	return p.split(path.sep).join('/');
+}
+
+async function getGitignoreForDir(dir: string, cache: Map<string, Ignore | null>): Promise<Ignore | null> {
+	if (cache.has(dir)) {
+		return cache.get(dir) ?? null;
+	}
+
+	try {
+		const gitignorePath = path.join(dir, '.gitignore');
+		const content = await fs.readFile(gitignorePath, 'utf8');
+		const lines = content
+			.split(/\r?\n/g)
+			.map((l) => l.trimEnd())
+			.filter((l) => l.length > 0 && !l.startsWith('#'));
+
+		if (lines.length === 0) {
+			cache.set(dir, null);
+			return null;
+		}
+
+		const ig = ignore();
+		ig.add(lines);
+		cache.set(dir, ig);
+		return ig;
+	} catch {
+		cache.set(dir, null);
+		return null;
+	}
+}
+
+function isIgnoredByGitignore(chain: GitIgnoreCtx[], fullPath: string, isDir: boolean): boolean {
+	// Apply parent -> child; child rules can unignore what parent ignored.
+	let ignored = false;
+	for (const ctx of chain) {
+		const rel = toPosix(path.relative(ctx.baseDir, fullPath));
+		if (!rel || rel.startsWith('..')) {
+			continue;
+		}
+
+		const testPath = isDir ? `${rel}/` : rel;
+		const res = ctx.ig.test(testPath);
+		if (res.unignored) {
+			ignored = false;
+		} else if (res.ignored) {
+			ignored = true;
+		}
+	}
+	return ignored;
+}
+
+async function scanForWorkspaceFiles(
+	root: string,
+	opts: {
+		deadline: number;
+		respectGitignore: boolean;
+		stopAtWorkspaceFile: boolean;
+		gitignoreCache: Map<string, Ignore | null>;
+		isGlobIgnored: (fullPath: string) => boolean;
+		onFound: (fullPath: string) => void;
+		isAborted: () => boolean;
+	}
+): Promise<void> {
+	type Node = { dir: string; gitignores: GitIgnoreCtx[] };
+	const stack: Node[] = [{ dir: root, gitignores: [] }];
+
+	while (stack.length > 0) {
+		if (opts.isAborted()) {
+			return;
+		}
+		if (Date.now() > opts.deadline) {
+			return;
+		}
+
+		const { dir, gitignores } = stack.pop()!;
+
+		// Glob ignores first
+		if (opts.isGlobIgnored(dir + path.sep)) {
+			continue;
+		}
+
+		// Gitignore: if this directory is ignored by any .gitignore in the chain, skip it
+		if (opts.respectGitignore && isIgnoredByGitignore(gitignores, dir, true)) {
+			continue;
+		}
+
+		// Extend gitignore chain if .gitignore exists here
+		let nextGitignores = gitignores;
+		if (opts.respectGitignore) {
+			const ig = await getGitignoreForDir(dir, opts.gitignoreCache);
+			if (ig) {
+				nextGitignores = [...gitignores, { baseDir: dir, ig }];
+			}
+		}
+
+		let entries: import('fs').Dirent[];
+		try {
+			entries = await fs.readdir(dir, { withFileTypes: true });
+		} catch {
+			continue;
+		}
+
+		// Pass 1: find workspace files in this directory
+		let foundHere = false;
+		for (const ent of entries) {
+			if (!ent.isFile()) {
+				continue;
+			}
+			if (!ent.name.endsWith('.code-workspace')) {
+				continue;
+			}
+
+			const full = path.join(dir, ent.name);
+
+			if (opts.isGlobIgnored(full)) {
+				continue;
+			}
+			if (opts.respectGitignore && isIgnoredByGitignore(nextGitignores, full, false)) {
+				continue;
+			}
+
+			foundHere = true;
+			opts.onFound(full);
+		}
+
+		// Branch pruning: if we found any .code-workspace here, optionally do not descend
+		if (foundHere && opts.stopAtWorkspaceFile) {
+			continue;
+		}
+
+		// Pass 2: descend into subdirectories
+		for (const ent of entries) {
+			if (!ent.isDirectory()) {
+				continue;
+			}
+			if (ent.isSymbolicLink()) {
+				continue;
+			}
+
+			const child = path.join(dir, ent.name);
+			if (opts.isGlobIgnored(child + path.sep)) {
+				continue;
+			}
+			if (opts.respectGitignore && isIgnoredByGitignore(nextGitignores, child, true)) {
+				continue;
+			}
+
+			stack.push({ dir: child, gitignores: nextGitignores });
+		}
+	}
 }

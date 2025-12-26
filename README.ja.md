@@ -85,6 +85,18 @@ Visual Studio Code で仕事している人向けに、以下の要望を解決�
 | `workspaceChronicle.roots` | 探索するルートディレクトリ | `["${userHome}"]` |
 | `workspaceChronicle.defaultOpenMode` | 既定の開き方 (`newWindow` / `reuseWindow`) | `newWindow` |
 | `workspaceChronicle.historyLimit` | 保存する履歴の最大件数 | `500` |
+| `workspaceChronicle.scanTimeoutMs` | スキャンのタイムアウト（ミリ秒）。時間内に見つかった結果を表示します | `30000` |
+| `workspaceChronicle.scanWhenWorkspaceFileOpen` | `.code-workspace`（マルチルート）を開いている状態でも探索します | `false` |
+| `workspaceChronicle.scanUseDefaultIgnore` | 組み込みの除外パターン（node_modules / ビルド成果物など）を使用 | `true` |
+| `workspaceChronicle.scanIgnore` | 追加の除外 glob（例: `**/go/pkg/**`, `**/pkg/mod/**`） | `[]` |
+| `workspaceChronicle.scanRespectGitignore` | `.gitignore` を読み取り、ignore されているパスは探索しない | `true` |
+| `workspaceChronicle.scanStopAtWorkspaceFile` | 同一ディレクトリに `.code-workspace` があれば配下は探索しない | `true` |
+| `workspaceChronicle.scanUpdateIntervalMs` | 探索中にツリーを更新する間隔（ミリ秒） | `500` |
+
+### 注意
+
+- `workspaceChronicle.roots` が広すぎる（例: `${userHome}`）場合、探索に時間がかかることがあります。roots を絞るか、除外設定を追加してください。
+- `.gitignore` 対応は roots 配下で見つかった `.gitignore` を読み取って適用します。現時点では global gitignore や `.git/info/exclude` は対象外です。
 
 ---
 

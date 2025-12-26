@@ -5,7 +5,7 @@
       "label": "npm: compile",
       "type": "shell",
       "command": "npm",
-      "args": ["compile"],
+      "args": ["run", "compile"],
       "group": {
         "kind": "build",
         "isDefault": true
@@ -17,7 +17,7 @@
       "label": "npm: watch",
       "type": "shell",
       "command": "npm",
-      "args": ["watch"],
+      "args": ["run", "watch"],
       "group": "build",
       "isBackground": true,
       "problemMatcher": "$tsc-watch",
@@ -27,7 +27,7 @@
       "label": "npm: lint",
       "type": "shell",
       "command": "npm",
-      "args": ["lint"],
+      "args": ["run", "lint"],
       "group": "test",
       "problemMatcher": [],
       "detail": "Runs ESLint across the project (npm)"

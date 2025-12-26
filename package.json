@@ -172,6 +172,40 @@
                     "default": 30000,
                     "minimum": 1000,
                     "description": "ワークスペーススキャンのタイムアウト時間（ミリ秒）。この時間を超えるとスキャンを中断し、それまでに見つかった結果を表示します。"
+                },
+                "workspaceChronicle.scanWhenWorkspaceFileOpen": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": ".code-workspace（マルチルート）を開いている状態でも、roots 配下の .code-workspace 探索を実行します。"
+                },
+                "workspaceChronicle.scanUseDefaultIgnore": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "探索時に、組み込みの除外パターン（node_modules / ビルド成果物など）を使用します。"
+                },
+                "workspaceChronicle.scanIgnore": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [],
+                    "description": "探索から除外する追加の glob パターン（例: **/go/pkg/**, **/pkg/mod/**）"
+                },
+                "workspaceChronicle.scanRespectGitignore": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "探索時に .gitignore を読み取り、ignore されているパスは探索しません。"
+                },
+                "workspaceChronicle.scanStopAtWorkspaceFile": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "同一ディレクトリ内で .code-workspace が見つかった場合、その配下には探索しません（枝刈り）。"
+                },
+                "workspaceChronicle.scanUpdateIntervalMs": {
+                    "type": "number",
+                    "default": 500,
+                    "minimum": 0,
+                    "description": "探索中に Workspaces ツリーを更新する間隔（ミリ秒）。0 で毎回更新します。"
                 }
             }
         },
@@ -282,12 +316,14 @@
         ]
     },
     "dependencies": {
-        "globby": "^16.0.0"
+        "ignore": "^7.0.5",
+        "picomatch": "^4.0.2"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.1",
         "@types/mocha": "^10.0.10",
         "@types/node": "^24.10.2",
+        "@types/picomatch": "^4.0.2",
         "@types/vscode": "^1.106.1",
         "@vscode/test-electron": "^2.5.2",
         "@vscode/vsce": "^3.7.1",

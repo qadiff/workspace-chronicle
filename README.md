@@ -92,6 +92,18 @@ This tool solves the following needs for people working with Visual Studio Code:
 | `workspaceChronicle.roots` | Root directories to search | `["${userHome}"]` |
 | `workspaceChronicle.defaultOpenMode` | Default open mode (`newWindow` / `reuseWindow`) | `newWindow` |
 | `workspaceChronicle.historyLimit` | Maximum number of history entries | `500` |
+| `workspaceChronicle.scanTimeoutMs` | Scan timeout in milliseconds (shows partial results on timeout) | `30000` |
+| `workspaceChronicle.scanWhenWorkspaceFileOpen` | Also scan when a multi-root `.code-workspace` is open | `false` |
+| `workspaceChronicle.scanUseDefaultIgnore` | Use built-in ignore patterns (node_modules, build outputs, caches, etc.) | `true` |
+| `workspaceChronicle.scanIgnore` | Additional ignore globs (e.g. `**/go/pkg/**`, `**/pkg/mod/**`) | `[]` |
+| `workspaceChronicle.scanRespectGitignore` | Respect `.gitignore` while scanning | `true` |
+| `workspaceChronicle.scanStopAtWorkspaceFile` | If a directory has a `.code-workspace`, do not scan deeper | `true` |
+| `workspaceChronicle.scanUpdateIntervalMs` | Throttle interval (ms) for updating the tree during scanning | `500` |
+
+### Notes
+
+- If `workspaceChronicle.roots` is very broad (e.g. `${userHome}`), scanning can take a long time. Prefer narrower roots and/or add ignores.
+- `.gitignore` support reads `.gitignore` files found under your roots. It does not currently include global gitignore or `.git/info/exclude`.
 
 ---
 
