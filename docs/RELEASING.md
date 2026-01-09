@@ -56,22 +56,29 @@ npm run compile        # Compile TypeScript
 npm run package        # Create VSIX file
 ```
 
-### 3. Create git tag
+### 3. Commit
+
+```bash
+git add package.json
+git commit -m "Release v0.0.9"
+```
+
+### 4. Create git tag
+
+Create the tag after committing the version change:
 
 ```bash
 npm run version:tag    # Creates local tag (e.g., v0.0.9)
 ```
 
-### 4. Commit and push
+### 5. Push
 
 ```bash
-git add package.json
-git commit -m "Release v0.0.9"
 git push origin main
 git push origin v0.0.9
 ```
 
-### 5. Publish to VS Code Marketplace
+### 6. Publish to VS Code Marketplace
 
 ```bash
 vsce publish

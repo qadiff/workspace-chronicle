@@ -24,16 +24,26 @@ function writePackageJson(packageJson) {
 	fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 4) + '\n', 'utf-8');
 }
 
+function validateVersionFormat(version) {
+	if (!/^\d+\.\d+\.\d+$/.test(version)) {
+		throw new Error(`Invalid version format: ${version} (must be digits and dots only, e.g., 1.2.3)`);
+	}
+}
+
 function parseVersion(version) {
+	validateVersionFormat(version);
 	const parts = version.split('.');
 	if (parts.length !== 3) {
-		console.error(`Invalid version format: ${version}`);
-		process.exit(1);
+		throw new Error(`Invalid version format: ${version}`);
+	}
+	const patch = parseInt(parts[2], 10);
+	if (isNaN(patch)) {
+		throw new Error(`Invalid patch version: ${parts[2]} is not a valid number`);
 	}
 	return {
 		major: parts[0],
 		minor: parts[1],
-		patch: parseInt(parts[2], 10)
+		patch
 	};
 }
 
@@ -41,20 +51,24 @@ function formatVersion({ major, minor, patch }) {
 	return `${major}.${minor}.${patch}`;
 }
 
+function bumpPatch(currentPatch, direction) {
+	if (direction === 'up') {
+		return currentPatch + 1;
+	} else if (direction === 'down') {
+		if (currentPatch <= 0) {
+			throw new Error('Cannot decrement: patch version is already 0');
+		}
+		return currentPatch - 1;
+	}
+	return currentPatch;
+}
+
 function bumpVersion(direction) {
 	const packageJson = readPackageJson();
 	const currentVersion = packageJson.version;
 	const parsed = parseVersion(currentVersion);
 
-	if (direction === 'up') {
-		parsed.patch += 1;
-	} else if (direction === 'down') {
-		if (parsed.patch <= 0) {
-			console.error('Cannot decrement: patch version is already 0');
-			process.exit(1);
-		}
-		parsed.patch -= 1;
-	}
+	parsed.patch = bumpPatch(parsed.patch, direction);
 
 	const newVersion = formatVersion(parsed);
 	packageJson.version = newVersion;
@@ -64,21 +78,27 @@ function bumpVersion(direction) {
 	return newVersion;
 }
 
+function tagExists(tag) {
+	try {
+		execSync(`git rev-parse ${tag}`, { stdio: 'pipe' });
+		return true;
+	} catch {
+		return false;
+	}
+}
+
 function createTag() {
 	const packageJson = readPackageJson();
 	const version = packageJson.version;
+	validateVersionFormat(version);
 	const tag = `v${version}`;
 
-	try {
-		// Check if tag already exists
-		try {
-			execSync(`git rev-parse ${tag}`, { stdio: 'pipe' });
-			console.error(`Tag ${tag} already exists. Use --untag to remove it first.`);
-			process.exit(1);
-		} catch {
-			// Tag doesn't exist, which is expected
-		}
+	if (tagExists(tag)) {
+		console.error(`Tag ${tag} already exists. Use --untag to remove it first.`);
+		process.exit(1);
+	}
 
+	try {
 		execSync(`git tag ${tag}`, { stdio: 'inherit' });
 		console.log(`Created tag: ${tag}`);
 		console.log(`To push: git push origin ${tag}`);
@@ -91,6 +111,7 @@ function createTag() {
 function deleteTag() {
 	const packageJson = readPackageJson();
 	const version = packageJson.version;
+	validateVersionFormat(version);
 	const tag = `v${version}`;
 
 	try {
@@ -128,21 +149,32 @@ Options:
 `);
 }
 
-// Parse arguments
-const args = process.argv.slice(2);
+// Export functions for testing
+module.exports = {
+	validateVersionFormat,
+	parseVersion,
+	formatVersion,
+	bumpPatch,
+	tagExists,
+};
 
-if (args.includes('--help') || args.includes('-h')) {
-	showHelp();
-	process.exit(0);
-}
+// Only run CLI when executed directly
+if (require.main === module) {
+	const args = process.argv.slice(2);
 
-if (args.includes('--tag')) {
-	createTag();
-} else if (args.includes('--untag')) {
-	deleteTag();
-} else if (args.includes('--down')) {
-	bumpVersion('down');
-} else {
-	// Default: increment
-	bumpVersion('up');
+	if (args.includes('--help') || args.includes('-h')) {
+		showHelp();
+		process.exit(0);
+	}
+
+	if (args.includes('--tag')) {
+		createTag();
+	} else if (args.includes('--untag')) {
+		deleteTag();
+	} else if (args.includes('--down')) {
+		bumpVersion('down');
+	} else {
+		// Default: increment
+		bumpVersion('up');
+	}
 }

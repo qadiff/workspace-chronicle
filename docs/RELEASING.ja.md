@@ -56,22 +56,29 @@ npm run compile        # TypeScript をコンパイル
 npm run package        # VSIX ファイルを作成
 ```
 
-### 3. git タグを作成
+### 3. コミット
+
+```bash
+git add package.json
+git commit -m "Release v0.0.9"
+```
+
+### 4. git タグを作成
+
+タグはバージョン変更のコミット後に作成します：
 
 ```bash
 npm run version:tag    # ローカルタグを作成（例：v0.0.9）
 ```
 
-### 4. コミットと push
+### 5. push
 
 ```bash
-git add package.json
-git commit -m "Release v0.0.9"
 git push origin main
 git push origin v0.0.9
 ```
 
-### 5. VS Code Marketplace に公開
+### 6. VS Code Marketplace に公開
 
 ```bash
 vsce publish
