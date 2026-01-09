@@ -79,6 +79,12 @@ function bumpVersion(direction) {
 }
 
 function tagExists(tag) {
+	// Validate tag format to prevent potential command injection
+	// Expected format: v + version (e.g., v1.2.3)
+	if (typeof tag !== 'string' || !/^v\d+\.\d+\.\d+$/.test(tag)) {
+		throw new Error(`Invalid tag format: ${tag} (must be v + version, e.g., v1.2.3)`);
+	}
+	
 	try {
 		execFileSync('git', ['rev-parse', tag], { stdio: 'pipe' });
 		return true;
