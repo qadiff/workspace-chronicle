@@ -9,7 +9,10 @@ export class ColorAliasStore {
 	private cache: ColorAliases | null = null;
 	private initPromise: Promise<void> | null = null;
 
-	constructor(private ctx: vscode.ExtensionContext) {}
+	// Keep `ctx` parameter for API consistency / future use, but do not store it.
+	constructor(ctx: vscode.ExtensionContext) {
+		void ctx;
+	}
 
 	// For testing: reset internal state
 	_reset(): void {
