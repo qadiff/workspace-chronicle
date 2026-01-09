@@ -46,7 +46,8 @@
         "onCommand:workspaceChronicle.importData",
         "onCommand:workspaceChronicle.addRootDirectory",
         "onCommand:workspaceChronicle.removeRootDirectory",
-        "onCommand:workspaceChronicle.listRootDirectories"
+        "onCommand:workspaceChronicle.listRootDirectories",
+        "onCommand:workspaceChronicle.setColorAlias"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -154,6 +155,10 @@
             {
                 "command": "workspaceChronicle.listRootDirectories",
                 "title": "Workspace Chronicle: List Root Directories"
+            },
+            {
+                "command": "workspaceChronicle.setColorAlias",
+                "title": "Workspace Chronicle: Set Color Alias"
             }
         ],
         "configuration": {
