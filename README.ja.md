@@ -72,6 +72,7 @@ Visual Studio Code で仕事している人向けに、以下の要望を解決�
 | **Workspace History ビュー** | 開いた日時・モードを履歴として表示 |
 | **開き方の選択** | 新規ウィンドウ（既定）または既存ウィンドウで開く |
 | **ラベル/色タグ** | ワークスペースにラベルや色を付けて整理 |
+| **色の別名（エイリアス）** | 色にカスタム表示名を設定（例: "red" → "重要"） |
 | **フィルター機能** | 名前・ラベル・色でワークスペースや履歴を絞り込み |
 | **クイックオープン** | コマンドパレットから素早くワークスペースを検索・開く |
 | **エクスポート/インポート** | メタデータと履歴をJSONファイルでバックアップ・復元 |
@@ -130,6 +131,7 @@ Visual Studio Code で仕事している人向けに、以下の要望を解決�
 | `Workspace Chronicle: Set Default Open Mode` | 既定の開き方を設定 |
 | `Workspace Chronicle: Set Custom Name` | カスタム名（ラベル）を設定 |
 | `Workspace Chronicle: Set Color` | 色タグを設定 |
+| `Workspace Chronicle: Set Color Alias` | 色のカスタム表示名を設定 |
 | `Workspace Chronicle: Filter by Label or Color` | Workspaces をラベル/色でフィルター |
 | `Workspace Chronicle: Filter History` | 履歴をキーワードでフィルター |
 | `Workspace Chronicle: Filter History by Label or Color` | 履歴をラベル/色でフィルター |

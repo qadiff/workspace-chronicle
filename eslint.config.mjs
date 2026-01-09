@@ -7,6 +7,7 @@ export default tseslint.config(
 			'out/**',
 			'node_modules/**',
 			'.vscode-test/**',
+			'scripts/**',
 			'*.config.{js,mjs}',
 			'**/*.d.ts'
 		]

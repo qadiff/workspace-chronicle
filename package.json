@@ -344,7 +344,12 @@
         "package": "vsce package",
         "prepare": "husky",
         "clean:vsce": "node -e \"const { rmSync } = require('fs'); rmSync('.vscode-test', { recursive: true, force: true });\"",
-        "vscode:prepublish": "npm run clean:vsce && npm run compile"
+        "vscode:prepublish": "npm run clean:vsce && npm run compile",
+        "bump": "node scripts/bump-version.js",
+        "bump:down": "node scripts/bump-version.js --down",
+        "version:tag": "node scripts/bump-version.js --tag",
+        "version:untag": "node scripts/bump-version.js --untag",
+        "release": "npm run bump && npm run compile && npm run package"
     },
     "lint-staged": {
         "**/*.{ts,tsx,js,jsx}": [
