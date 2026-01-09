@@ -4,6 +4,7 @@ const {
 	parseVersion,
 	formatVersion,
 	bumpPatch,
+	tagExists,
 } = require('./bump-version');
 
 describe('bump-version', function () {
@@ -169,6 +170,60 @@ describe('bump-version', function () {
 			const parsed = parseVersion('1.2.3');
 			parsed.patch = bumpPatch(parsed.patch, 'up');
 			assert.strictEqual(formatVersion(parsed), '1.2.4');
+		});
+	});
+
+	describe('tagExists', function () {
+		it('should accept valid tag format', function () {
+			// Note: These will return false since the tags don't exist,
+			// but they should not throw due to format validation
+			assert.strictEqual(tagExists('v0.0.1'), false);
+			assert.strictEqual(tagExists('v1.2.3'), false);
+			assert.strictEqual(tagExists('v10.20.30'), false);
+		});
+
+		it('should reject tags with shell metacharacters (command injection)', function () {
+			assert.throws(
+				() => tagExists('v1.0.0; rm -rf /'),
+				/Invalid tag format/
+			);
+			assert.throws(
+				() => tagExists('v1.0.0 && echo pwned'),
+				/Invalid tag format/
+			);
+			assert.throws(
+				() => tagExists('v1.0.0`whoami`'),
+				/Invalid tag format/
+			);
+			assert.throws(
+				() => tagExists('$(cat /etc/passwd)'),
+				/Invalid tag format/
+			);
+		});
+
+		it('should reject tags without v prefix', function () {
+			assert.throws(() => tagExists('1.2.3'), /Invalid tag format/);
+			assert.throws(() => tagExists('0.0.1'), /Invalid tag format/);
+		});
+
+		it('should reject tags with invalid version format', function () {
+			assert.throws(() => tagExists('v1.2.x'), /Invalid tag format/);
+			assert.throws(() => tagExists('v1.2'), /Invalid tag format/);
+			assert.throws(() => tagExists('v1'), /Invalid tag format/);
+			assert.throws(() => tagExists('vx.y.z'), /Invalid tag format/);
+		});
+
+		it('should reject non-string input', function () {
+			assert.throws(() => tagExists(null), /Invalid tag format/);
+			assert.throws(() => tagExists(undefined), /Invalid tag format/);
+			assert.throws(() => tagExists(123), /Invalid tag format/);
+			assert.throws(() => tagExists({}), /Invalid tag format/);
+		});
+
+		it('should reject empty or invalid strings', function () {
+			assert.throws(() => tagExists(''), /Invalid tag format/);
+			assert.throws(() => tagExists('v'), /Invalid tag format/);
+			assert.throws(() => tagExists('version'), /Invalid tag format/);
 		});
 	});
 });
