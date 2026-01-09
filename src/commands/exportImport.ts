@@ -3,6 +3,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { MetaStore } from '../store/MetaStore';
 import { HistoryStore } from '../store/HistoryStore';
+import { ColorAliasStore, ColorAliases } from '../store/ColorAliasStore';
 
 interface ExportData {
 	version: string;
@@ -15,6 +16,7 @@ interface ExportData {
 		openedAt: string;
 		count?: number;
 	}>;
+	colorAliases?: ColorAliases;
 }
 
 /**
@@ -36,17 +38,20 @@ export function getDefaultDirectory(workspaceFile?: vscode.Uri): string | undefi
 export function registerExportImport(
 	context: vscode.ExtensionContext,
 	metaStore: MetaStore,
-	historyStore: HistoryStore
+	historyStore: HistoryStore,
+	colorAliasStore: ColorAliasStore
 ) {
 	// Export command
 	context.subscriptions.push(
 		vscode.commands.registerCommand('workspaceChronicle.exportData', async () => {
 			try {
+				const colorAliases = await colorAliasStore.getAll();
 				const exportData: ExportData = {
 					version: '1.0',
 					exportedAt: new Date().toISOString(),
 					meta: await metaStore.getAll(),
-					history: await historyStore.getAll()
+					history: await historyStore.getAll(),
+					...(Object.keys(colorAliases).length > 0 && { colorAliases })
 				};
 
 				// Determine default directory
@@ -144,6 +149,11 @@ export function registerExportImport(
 				// Import history
 				for (const entry of importData.history) {
 					await historyStore.add(entry);
+				}
+
+				// Import color aliases
+				if (importData.colorAliases) {
+					await colorAliasStore.importAll(importData.colorAliases);
 				}
 
 				// Show success message

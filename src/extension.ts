@@ -14,11 +14,14 @@ import { registerExportImport } from './commands/exportImport';
 import { addRootDirectory, removeRootDirectory, listRootDirectories } from './commands/configureRoots';
 import { HistoryStore } from './store/HistoryStore';
 import { MetaStore } from './store/MetaStore';
+import { ColorAliasStore } from './store/ColorAliasStore';
 import { WorkspaceFilesStore } from './store/WorkspaceFilesStore';
+import { registerSetColorAlias } from './commands/setColorAlias';
 
 export function activate(context: vscode.ExtensionContext) {
 	const history = new HistoryStore(context);
 	const meta = new MetaStore(context);
+	const colorAliases = new ColorAliasStore(context);
 	const workspaceFiles = new WorkspaceFilesStore();
 
 	const workspacesProvider = new WorkspacesProvider(meta, history, workspaceFiles);
@@ -72,11 +75,12 @@ export function activate(context: vscode.ExtensionContext) {
 	registerQuickOpenWorkspaces(context, workspacesProvider, meta);
 	registerSetOpenMode(context);
 	registerSetLabel(context, meta, workspacesProvider, historyProvider);
-	registerSetColor(context, meta, workspacesProvider, historyProvider);
+	registerSetColor(context, meta, colorAliases, workspacesProvider, historyProvider);
 	registerFilterHistory(context, historyProvider);
-	registerFilterByTag(context, meta, workspacesProvider, historyProvider);
+	registerFilterByTag(context, meta, colorAliases, workspacesProvider, historyProvider);
+	registerSetColorAlias(context, colorAliases, workspacesProvider, historyProvider);
 	registerClearFilters(context, workspacesProvider, historyProvider);
-	registerExportImport(context, meta, history);
+	registerExportImport(context, meta, history, colorAliases);
 	registerCopyFullPath(context);
 
 	context.subscriptions.push(

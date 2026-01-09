@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { MetaStore } from '../store/MetaStore';
+import { ColorAliasStore } from '../store/ColorAliasStore';
 import { WorkspacesProvider } from '../tree/WorkspacesProvider';
 import { HistoryProvider } from '../tree/HistoryProvider';
 
@@ -8,7 +9,7 @@ interface QuickPickItemWithTag extends vscode.QuickPickItem {
 	value?: string;
 }
 
-async function buildFilterItems(meta: MetaStore): Promise<QuickPickItemWithTag[]> {
+async function buildFilterItems(meta: MetaStore, colorAliases: ColorAliasStore): Promise<QuickPickItemWithTag[]> {
 	const labels = await meta.getAllLabels();
 	const colors = await meta.getAllColors();
 
@@ -44,8 +45,10 @@ async function buildFilterItems(meta: MetaStore): Promise<QuickPickItemWithTag[]
 			kind: vscode.QuickPickItemKind.Separator
 		});
 		for (const color of colors) {
+			const alias = await colorAliases.get(color);
+			const displayName = alias ? `${alias} (${color})` : color;
 			items.push({
-				label: `$(circle-filled) ${color}`,
+				label: `$(circle-filled) ${displayName}`,
 				description: 'Filter by color',
 				type: 'color',
 				value: color
@@ -59,12 +62,13 @@ async function buildFilterItems(meta: MetaStore): Promise<QuickPickItemWithTag[]
 export function registerFilterByTag(
 	context: vscode.ExtensionContext,
 	meta: MetaStore,
+	colorAliases: ColorAliasStore,
 	workspacesProvider: WorkspacesProvider,
 	historyProvider: HistoryProvider
 ) {
 	// Filter for Workspaces view only
 	const runWorkspacesFilter = async () => {
-		const items = await buildFilterItems(meta);
+		const items = await buildFilterItems(meta, colorAliases);
 
 		if (items.length === 1) {
 			vscode.window.showInformationMessage('No labels or colors found. Set labels or colors on workspaces first.');
@@ -105,7 +109,7 @@ export function registerFilterByTag(
 
 	// Filter for History view only
 	const runHistoryFilter = async () => {
-		const items = await buildFilterItems(meta);
+		const items = await buildFilterItems(meta, colorAliases);
 
 		if (items.length === 1) {
 			vscode.window.showInformationMessage('No labels or colors found. Set labels or colors on workspaces first.');
