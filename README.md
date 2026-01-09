@@ -79,6 +79,7 @@ This tool solves the following needs for people working with Visual Studio Code:
 | **Workspace History View** | Displays history with open date/time and mode |
 | **Open Mode Selection** | Open in new window (default) or reuse existing window |
 | **Label/Color Tags** | Organize workspaces with labels and colors |
+| **Color Aliases** | Set custom display names for colors (e.g., "red" → "Important") |
 | **Filter** | Filter workspaces and history by name, label, or color |
 | **Quick Open** | Quickly search and open workspaces from command palette |
 | **Export/Import** | Backup and restore metadata and history as JSON files |
@@ -137,6 +138,7 @@ Stores history, metadata, and scan cache in platform-specific locations:
 | `Workspace Chronicle: Set Default Open Mode` | Set the default open mode |
 | `Workspace Chronicle: Set Custom Name` | Set a custom name (label) |
 | `Workspace Chronicle: Set Color` | Set a color tag |
+| `Workspace Chronicle: Set Color Alias` | Set a custom display name for a color |
 | `Workspace Chronicle: Filter by Label or Color` | Filter Workspaces by label/color |
 | `Workspace Chronicle: Filter History` | Filter history by keyword |
 | `Workspace Chronicle: Filter History by Label or Color` | Filter history by label/color |
