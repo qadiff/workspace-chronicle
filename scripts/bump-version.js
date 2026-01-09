@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 
 const packageJsonPath = path.join(__dirname, '..', 'package.json');
 
@@ -80,7 +80,7 @@ function bumpVersion(direction) {
 
 function tagExists(tag) {
 	try {
-		execSync(`git rev-parse ${tag}`, { stdio: 'pipe' });
+		execFileSync('git', ['rev-parse', tag], { stdio: 'pipe' });
 		return true;
 	} catch {
 		return false;
@@ -99,7 +99,7 @@ function createTag() {
 	}
 
 	try {
-		execSync(`git tag ${tag}`, { stdio: 'inherit' });
+		execFileSync('git', ['tag', tag], { stdio: 'inherit' });
 		console.log(`Created tag: ${tag}`);
 		console.log(`To push: git push origin ${tag}`);
 	} catch (error) {
@@ -116,7 +116,7 @@ function deleteTag() {
 
 	try {
 		// Delete local tag
-		execSync(`git tag -d ${tag}`, { stdio: 'inherit' });
+		execFileSync('git', ['tag', '-d', tag], { stdio: 'inherit' });
 		console.log(`Deleted local tag: ${tag}`);
 
 		// Ask about remote
