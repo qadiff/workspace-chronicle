@@ -21,8 +21,8 @@ export function registerSetColorAlias(
 				COLORS.map(async (color) => {
 					const alias = await colorAliases.get(color);
 					return {
-						label: alias ? `$(circle-filled) ${alias}` : `$(circle-filled) ${color}`,
-						description: alias ? color : undefined,
+						label: alias ? `${alias} (${color})` : color,
+						description: undefined,
 						detail: alias ? 'Has alias' : 'No alias set',
 						colorValue: color
 					};
