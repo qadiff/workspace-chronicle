@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.0.9
+- Add color alias feature:
+  - Assign custom names (aliases) to workspace colors
+  - New `Workspace Chronicle: Set Color Alias` command
+  - Aliases are persisted across sessions
+- Add version bump and release scripts for streamlined releases
+- Security improvements:
+  - Use `execFileSync` instead of `execSync` to prevent shell injection
+  - Add input validation to `tagExists` function for defense-in-depth
+- Exclude `scripts` directory from ESLint checks
+
 ## 0.0.8
 - Improve workspace discovery performance and control:
   - Respect `.gitignore` while scanning (configurable)
