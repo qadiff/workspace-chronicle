@@ -43,8 +43,8 @@ suite('ConfigureRoots Test Suite', () => {
 				update: mockConfig.update,
 				has: () => true,
 				inspect: () => undefined
-			} as unknown as vscode.WorkspaceConfiguration;
-		}) as typeof vscode.workspace.getConfiguration;
+			};
+		});
 	});
 
 	teardown(() => {
@@ -271,4 +271,3 @@ suite('ConfigureRoots Test Suite', () => {
 		assert.ok(mockConfig.roots.includes(normalizedPath));
 	});
 });
-

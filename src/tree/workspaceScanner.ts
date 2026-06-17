@@ -56,6 +56,14 @@ export type GitIgnoreCtx = {
 	ig: Ignore;
 };
 
+export type WorkspaceScanStatus = 'completed' | 'timedOut' | 'aborted';
+
+export type ScanWorkspaceRootsResult = {
+	files: string[];
+	status: WorkspaceScanStatus;
+	scannedRoots: number;
+};
+
 export function toPosixPath(p: string): string {
 	return p.split(path.sep).join('/');
 }
@@ -127,16 +135,16 @@ export async function scanForWorkspaceFiles(
 		onFound: (fullPath: string) => void;
 		isAborted: () => boolean;
 	}
-): Promise<void> {
+): Promise<WorkspaceScanStatus> {
 	type Node = { dir: string; gitignores: GitIgnoreCtx[] };
 	const stack: Node[] = [{ dir: root, gitignores: [] }];
 
 	while (stack.length > 0) {
 		if (opts.isAborted()) {
-			return;
+			return 'aborted';
 		}
 		if (Date.now() > opts.deadline) {
-			return;
+			return 'timedOut';
 		}
 
 		const { dir, gitignores } = stack.pop()!;
@@ -212,4 +220,54 @@ export async function scanForWorkspaceFiles(
 			stack.push({ dir: child, gitignores: nextGitignores });
 		}
 	}
+
+	return 'completed';
+}
+
+export async function scanWorkspaceRoots(
+	roots: string[],
+	opts: {
+		deadline: number;
+		respectGitignore: boolean;
+		stopAtWorkspaceFile: boolean;
+		isGlobIgnored: (fullPath: string) => boolean;
+		onFound?: (fullPath: string) => void;
+		isAborted?: () => boolean;
+		gitignoreCache?: Map<string, Ignore | null>;
+	}
+): Promise<ScanWorkspaceRootsResult> {
+	const files = new Set<string>();
+	const gitignoreCache = opts.gitignoreCache ?? new Map<string, Ignore | null>();
+	const isAborted = opts.isAborted ?? (() => false);
+	let scannedRoots = 0;
+
+	for (const root of roots) {
+		if (isAborted()) {
+			return { files: Array.from(files), status: 'aborted', scannedRoots };
+		}
+		if (Date.now() > opts.deadline) {
+			return { files: Array.from(files), status: 'timedOut', scannedRoots };
+		}
+
+		const status = await scanForWorkspaceFiles(root, {
+			deadline: opts.deadline,
+			respectGitignore: opts.respectGitignore,
+			stopAtWorkspaceFile: opts.stopAtWorkspaceFile,
+			gitignoreCache,
+			isGlobIgnored: opts.isGlobIgnored,
+			onFound: (file) => {
+				files.add(file);
+				opts.onFound?.(file);
+			},
+			isAborted
+		});
+
+		if (status !== 'completed') {
+			return { files: Array.from(files), status, scannedRoots };
+		}
+
+		scannedRoots += 1;
+	}
+
+	return { files: Array.from(files), status: 'completed', scannedRoots };
 }
