@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as os from 'os';
 import * as path from 'path';
-import { type Ignore } from 'ignore';
 import { MetaStore } from '../store/MetaStore';
 import { HistoryStore } from '../store/HistoryStore';
 import {
@@ -11,7 +10,7 @@ import {
 import {
 	DEFAULT_IGNORE_GLOBS,
 	createGlobIgnoreMatcher,
-	scanForWorkspaceFiles
+	scanWorkspaceRoots
 } from './workspaceScanner';
 import { shouldScanWorkspaceFiles } from './scanGating';
 
@@ -31,7 +30,6 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 	private refreshTimeout?: NodeJS.Timeout;
 	private refreshPromise?: Promise<void>;
 	private refreshGeneration = 0;
-	private scanAborted = false;
 
 	constructor(
 		private meta: MetaStore,
@@ -150,7 +148,6 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 		}
 
 		this.isRefreshing = true;
-		this.scanAborted = false;
 		this.refreshPromise = (async () => {
 			try {
 				if (roots.length === 0) {
@@ -172,49 +169,35 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 					}
 				};
 
-				const gitignoreCache = new Map<string, Ignore | null>();
-
-				for (const root of uniqueRoots) {
-					if (this.scanAborted) {
-						break;
+				const result = await scanWorkspaceRoots(uniqueRoots, {
+					deadline,
+					respectGitignore: scanRespectGitignore,
+					stopAtWorkspaceFile: scanStopAtWorkspaceFile,
+					isGlobIgnored,
+					onFound: (file) => {
+						allFiles.add(file);
+						maybeUpdate();
 					}
-					if (Date.now() > deadline) {
-						this.scanAborted = true;
-						break;
-					}
+				});
 
-					await scanForWorkspaceFiles(root, {
-						deadline,
-						respectGitignore: scanRespectGitignore,
-						stopAtWorkspaceFile: scanStopAtWorkspaceFile,
-						gitignoreCache,
-						isGlobIgnored,
-						onFound: (file) => {
-							allFiles.add(file);
-							maybeUpdate();
-						},
-						isAborted: () => this.scanAborted
-					});
-				}
-
-				if (Date.now() > deadline) {
-					this.scanAborted = true;
-				}
-
-				if (this.scanAborted) {
+				if (result.status === 'timedOut') {
 					console.log(
-						`[WorkspacesProvider] Scan timed out after ${timeoutMs}ms. Found ${allFiles.size} workspace files (partial).`
+						`[WorkspacesProvider] Scan timed out after ${timeoutMs}ms. Found ${result.files.length} workspace files (partial).`
+					);
+				} else if (result.status === 'aborted') {
+					console.log(
+						`[WorkspacesProvider] Scan aborted. Found ${result.files.length} workspace files (partial).`
 					);
 				} else {
 					console.log(
-						`[WorkspacesProvider] Found ${allFiles.size} workspace files across ${uniqueRoots.length} roots`
+						`[WorkspacesProvider] Found ${result.files.length} workspace files across ${result.scannedRoots} roots`
 					);
 				}
 
-				const finalFiles = Array.from(allFiles);
+				const finalFiles = result.files;
 				this.applyUpdate(finalFiles, generation);
 				try {
-					await this.workspaceFiles.set(signature, process.platform, finalFiles, this.scanAborted);
+					await this.workspaceFiles.set(signature, process.platform, finalFiles, result.status !== 'completed');
 				} catch (error) {
 					console.error('[WorkspacesProvider] Failed to persist workspace-files cache:', error);
 				}
@@ -222,7 +205,6 @@ export class WorkspacesProvider implements vscode.TreeDataProvider<WorkspaceItem
 				console.error('[WorkspacesProvider] Error refreshing workspace files:', error);
 			} finally {
 				this.isRefreshing = false;
-				this.scanAborted = false;
 				this.refreshPromise = undefined;
 			}
 		})();

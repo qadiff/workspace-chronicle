@@ -5,7 +5,8 @@ import * as fs from 'fs/promises';
 import { type Ignore } from 'ignore';
 import {
 	createGlobIgnoreMatcher,
-	scanForWorkspaceFiles
+	scanForWorkspaceFiles,
+	scanWorkspaceRoots
 } from '../tree/workspaceScanner';
 
 async function makeTempDir(): Promise<string> {
@@ -149,6 +150,75 @@ suite('WorkspaceScanner Test Suite', () => {
 
 			assert.strictEqual(results.length, 1);
 			assert.ok(results[0].endsWith(path.join('sub', 'keep', 'y.code-workspace')));
+		} finally {
+			await cleanupTempDir(dir);
+		}
+	});
+
+	test('reports timedOut when deadline has already passed', async () => {
+		const dir = await makeTempDir();
+		try {
+			await writeFile(path.join(dir, 'a.code-workspace'), '{}');
+			const found = new Set<string>();
+			const status = await scanForWorkspaceFiles(dir, {
+				deadline: 0,
+				respectGitignore: false,
+				stopAtWorkspaceFile: false,
+				gitignoreCache: new Map<string, Ignore | null>(),
+				isGlobIgnored: createGlobIgnoreMatcher([]),
+				onFound: (p) => found.add(p),
+				isAborted: () => false
+			});
+
+			assert.strictEqual(status, 'timedOut');
+			assert.strictEqual(found.size, 0);
+		} finally {
+			await cleanupTempDir(dir);
+		}
+	});
+
+	test('reports aborted when abort signal is already set', async () => {
+		const dir = await makeTempDir();
+		try {
+			await writeFile(path.join(dir, 'a.code-workspace'), '{}');
+			const found = new Set<string>();
+			const status = await scanForWorkspaceFiles(dir, {
+				deadline: Date.now() + 60_000,
+				respectGitignore: false,
+				stopAtWorkspaceFile: false,
+				gitignoreCache: new Map<string, Ignore | null>(),
+				isGlobIgnored: createGlobIgnoreMatcher([]),
+				onFound: (p) => found.add(p),
+				isAborted: () => true
+			});
+
+			assert.strictEqual(status, 'aborted');
+			assert.strictEqual(found.size, 0);
+		} finally {
+			await cleanupTempDir(dir);
+		}
+	});
+
+	test('scanWorkspaceRoots returns files and completed status across roots', async () => {
+		const dir = await makeTempDir();
+		try {
+			const rootA = path.join(dir, 'root-a');
+			const rootB = path.join(dir, 'root-b');
+			await writeFile(path.join(rootA, 'a.code-workspace'), '{}');
+			await writeFile(path.join(rootB, 'b.code-workspace'), '{}');
+
+			const result = await scanWorkspaceRoots([rootA, rootB], {
+				deadline: Date.now() + 60_000,
+				respectGitignore: false,
+				stopAtWorkspaceFile: false,
+				isGlobIgnored: createGlobIgnoreMatcher([])
+			});
+
+			assert.strictEqual(result.status, 'completed');
+			assert.strictEqual(result.scannedRoots, 2);
+			assert.strictEqual(result.files.length, 2);
+			assert.ok(result.files.some((p) => p.endsWith(path.join('root-a', 'a.code-workspace'))));
+			assert.ok(result.files.some((p) => p.endsWith(path.join('root-b', 'b.code-workspace'))));
 		} finally {
 			await cleanupTempDir(dir);
 		}
